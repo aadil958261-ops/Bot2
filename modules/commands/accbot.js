@@ -309,7 +309,7 @@ module.exports.handleReply = async function ({ api, event, handleReply }) {
       api.httpPost("https://www.facebook.com/api/graphql/", form, (e, i) => {
         if (e) reply(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**An error occurred, please try again later**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`);
         else if (JSON.parse(i.slice(0, i.indexOf('\n') + 1)).errors) reply(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**An error occurred: ${JSON.parse(i).errors[0].description}**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`);
-        else reply(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully changed the bot's avatar, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`);
+        else reply(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully changed the bot's avatar, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`);
       });
     }
     catch (err) {
@@ -441,7 +441,7 @@ module.exports.handleReply = async function ({ api, event, handleReply }) {
       if (e || JSON.parse(i).errors) return reply(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Failed to create post, please try again later**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`);
       const postID = JSON.parse(i).data.story_create.story.legacy_story_hideable_id;
       const urlPost = JSON.parse(i).data.story_create.story.url;
-      return reply(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully created post, Kashif Raza!**\n» Post ID: ${postID}\n» Post URL: ${urlPost}\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`);
+      return reply(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully created post, Attaullah Sindhi!**\n» Post ID: ${postID}\n» Post URL: ${urlPost}\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`);
     });
   }
   else if (type == 'choiceIdCommentPost') {
