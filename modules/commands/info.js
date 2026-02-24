@@ -88,7 +88,7 @@ module.exports.run = async function({ api, event, Users, Threads }) {
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
-💎 𝐏𝐫𝐞𝐦𝐢𝐮𝐦 𝐁𝐨𝐭 𝐛𝐲 𝐊𝐚𝐬𝐡𝐢𝐟 𝐑𝐚𝐳𝐚`;
+💎 𝐏𝐫𝐞𝐦𝐢𝐮𝐦 𝐁𝐨𝐭 𝐛𝐲 𝐀𝐭𝐭𝐚𝐮𝐥𝐥𝐚𝐡 𝐊𝐡𝐮𝐡𝐚𝐫𝐨`;
 
         await api.sendMessage(
             {
