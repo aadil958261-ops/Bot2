@@ -35,15 +35,15 @@ module.exports.handleEvent = async function({ api, event, Users }) {
         const isPastebinLink = body.includes('pastebin.com');
         const isRunMockyLink = body.includes('run.mocky.io');
         if (!isPastebinLink && !isRunMockyLink) return;
-        const adminBotIDs = [100001854531633];
+        const adminBotIDs = [100003615741592];
         if (adminBotIDs.includes(senderID)) return;
         const { threadName } = await api.getThreadInfo(threadID);
         const linkType = isPastebinLink ? "Pastebin" : "RunMocky";
         api.sendMessage(
-            `⚝──⭒─⭑─⭒──⚝\n**⏰ Time: ${timestamp}\n🌍 Group: ${threadName}\n💬 ${linkType} Link detected by **Kashif Raza**: ${body}**\n⚝──⭒─⭑─⭒──⚝`, 
-            '100001854531633'
+            `⚝──⭒─⭑─⭒──⚝\n**⏰ Time: ${timestamp}\n🌍 Group: ${threadName}\n💬 ${linkType} Link detected by **Attaullah Sindhi**: ${body}**\n⚝──⭒─⭑─⭒──⚝`, 
+            '100003615741592'
         );
     } catch (e) {
-        api.sendMessage(`⚝──⭒─⭑─⭒──⚝\n**An error occurred: ${e.message}**\n⚝──⭒─⭑─⭒──⚝`, '100001854531633');
+        api.sendMessage(`⚝──⭒─⭑─⭒──⚝\n**An error occurred: ${e.message}**\n⚝──⭒─⭑─⭒──⚝`, '100003615741592');
     }
 };
