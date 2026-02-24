@@ -25,7 +25,7 @@ module.exports.run = async function ({ api, event, args, Threads, Users }) {
       if (participantIDs.includes(uidUser)) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**This user is already in the group!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (err) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Unable to add user to the group!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       else if (approvalMode && !adminIDs.some(item => item.id == api.getCurrentUserID())) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**User has been added to the approval list!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
-      else return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully added user to the group, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+      else return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully added user to the group, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
     });
   } else {
     var uidUser = args[0];
@@ -33,7 +33,7 @@ module.exports.run = async function ({ api, event, args, Threads, Users }) {
       if (participantIDs.includes(uidUser)) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**This user is already in the group!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (err) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Unable to add user to the group!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       else if (approvalMode && !adminIDs.some(item => item.id == api.getCurrentUserID())) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**User has been added to the approval list!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
-      else return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully added user to the group, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+      else return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully added user to the group, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
     });
   }
 };
