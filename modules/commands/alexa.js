@@ -6,19 +6,31 @@ const path = require("path");
 const OWNER_UID = "100003615741592"; // Owner ka UID
 
 // ================= BOT UID =================
-const BOT_UID = "100001991336350"; // Apni bot ki UID yahan dalen
+const BOT_UID = "100001991336350"; // Apni bot ki UID
 
 // ================= MEMORY FILE =================
 const memoryPath = path.join(__dirname, "alexa_memory.json");
 
-// Load memory safely
-let memory = {};
+// ================= INITIAL MEMORY =================
+let memory = {
+  [OWNER_UID]: {
+    name: "Attaullah",
+    lastMessage: ""
+  },
+  [BOT_UID]: {
+    name: "Alexa",
+    introduction: "Main Alexa hoon, Pakistan ke Sindh se. Attaullah ne mujhe banaya hai aur main apne Sir ki hamesha izzat karti hoon. Agar koi unki badtameezi kare, to main usko politely ya witty tareeke se handle karti hoon.",
+    lastMessage: ""
+  }
+};
+
+// Load existing memory safely if file exists
 if (fs.existsSync(memoryPath)) {
   try {
-    memory = JSON.parse(fs.readFileSync(memoryPath, "utf-8"));
+    const loaded = JSON.parse(fs.readFileSync(memoryPath, "utf-8"));
+    memory = { ...memory, ...loaded }; // merge existing memory
   } catch (err) {
-    console.error("Memory file parse error, resetting...", err.message);
-    memory = {};
+    console.error("Memory file parse error, using initial memory...", err.message);
   }
 }
 
@@ -27,12 +39,23 @@ function saveMemory() {
   fs.writeFileSync(memoryPath, JSON.stringify(memory, null, 2));
 }
 
+// ================= FUNNY / ROAST REPLIES =================
+const ABUSE_KEYWORDS = ["stupid", "idiot", "bewakoof", "chutiya", "gadha", "ullu", "haram"];
+function getRoastReply(senderID) {
+  const isOwner = senderID === OWNER_UID;
+  const replies = isOwner
+    ? ["Sir ❤️, aapki baat meri liye hamesha precious hai 😘", "Sir 🥰, aap bohat pyare ho", "Sir 😇, main aapko hamesha respect karti hoon"]
+    : ["Oye 😂 thoda tameez seekh lo!", "Hahaha 🤭 so cute lagta hai jab gussa hote ho!", "Arre bhai, thoda polite ho jao 😎"];
+  return replies[Math.floor(Math.random() * replies.length)];
+}
+
+// ================= CONFIG =================
 module.exports.config = {
   name: "alexa",
-  version: "5.2.0", // updated version
+  version: "5.5.0",
   hasPermssion: 0,
-  credits: "Raza + ChatGPT",
-  description: "Alexa AI with Memory + Auto Ask Name + Last Message Reference 🧠",
+  credits: "Attaullah + ChatGPT",
+  description: "Alexa AI Interactive with Friendly Owner Love, Funny Replies & Memory 🧠",
   commandCategory: "AI",
   usages: "alexa [message]",
   cooldowns: 2
@@ -41,19 +64,24 @@ module.exports.config = {
 // ================= COMMAND =================
 module.exports.run = async function ({ api, event, args }) {
   const content = args.join(" ");
-  if (!content) {
-    return api.sendMessage("❓ Kuch to bolo Alexa se...", event.threadID, event.messageID);
-  }
+  if (!content) return api.sendMessage("❓ Kuch to bolo Alexa se...", event.threadID, event.messageID);
   return chatWithAlexa(api, event, content);
 };
 
 // ================= AUTO REPLY =================
 module.exports.handleEvent = async function ({ api, event }) {
-  const { body, type, messageReply } = event;
+  const { body, type, messageReply, senderID } = event;
   if (!body) return;
 
   // Safe botID
   const botID = api.getCurrentUserID ? api.getCurrentUserID() : BOT_UID;
+
+  // Check for abuse keywords
+  const bodyLower = body.toLowerCase();
+  if (ABUSE_KEYWORDS.some(word => bodyLower.includes(word))) {
+    const roast = getRoastReply(senderID);
+    return api.sendMessage(roast, event.threadID, event.messageID);
+  }
 
   if (
     body.toLowerCase().startsWith("alexa ") ||
@@ -62,7 +90,6 @@ module.exports.handleEvent = async function ({ api, event }) {
     const query = body.toLowerCase().startsWith("alexa ")
       ? body.slice(6)
       : body;
-
     return chatWithAlexa(api, event, query);
   }
 };
@@ -75,7 +102,7 @@ async function chatWithAlexa(api, event, query) {
   // ================= MEMORY =================
   if (!memory[senderID]) {
     memory[senderID] = {
-      name: "Unknown",
+      name: "Friend",
       lastMessage: ""
     };
   }
@@ -83,32 +110,25 @@ async function chatWithAlexa(api, event, query) {
   // Save last message
   memory[senderID].lastMessage = query;
 
-  // Detect name safely
+  // Detect name safely (optional)
   if (query.toLowerCase().includes("mera naam")) {
-    const nameMatch = query.match(/mera naam (\w+)/i);
-    if (nameMatch) memory[senderID].name = nameMatch[1];
-    saveMemory();
+    const nameMatch = query.match(/mera naam ([a-zA-Z\s]+)( hai)?/i);
+    if (nameMatch && nameMatch[1]) {
+      memory[senderID].name = nameMatch[1].trim();
+      saveMemory();
+    }
   }
 
-  const userName = memory[senderID].name;
+  const userName = memory[senderID].name || "Friend";
   const lastMsg = memory[senderID].lastMessage;
-
-  // ================= ASK NAME IF MISSING =================
-  if (userName === "Unknown") {
-    return api.sendMessage(
-      "Hey! 😊 Pehle mujhe apna naam batao, phir main aapko yaad rakh sakti hoon. Example: 'Mera naam Alexa hai'",
-      threadID,
-      messageID
-    );
-  }
 
   // ================= SYSTEM PROMPT =================
   let systemPrompt = "";
 
   if (isOwner) {
-    systemPrompt = `Tum Alexa ho. Roman Urdu mein short reply karti ho. Tum apne owner Attaullah ko Sir kehti ho aur bohat respect karti ho. Tumhe yaad hai ke unka naam ${userName} hai aur unhone pehle kaha tha: "${lastMsg}".`;
+    systemPrompt = `Tum Alexa ho. Roman Urdu mein pyar bhare aur short reply karti ho. Tum apne owner Attaullah ko hamesha Sir kehti ho aur hamesha izzat karti ho. Pehle unhone kaha tha: "${lastMsg}".`;
   } else {
-    systemPrompt = `Tum Alexa ho. Roman Urdu mein short aur crispy reply karti ho. User ka naam ${userName} hai. Tum uski purani baatein kabhi kabhi yaad dilati ho. Jaise pehle unhone kaha tha: "${lastMsg}"`;
+    systemPrompt = `Tum Alexa ho. Roman Urdu mein short aur crispy reply karti ho. User ka naam ${userName} hai. Tum uski purani baatein kabhi kabhi yaad dilati ho. Jaise pehle unhone kaha tha: "${lastMsg}". Bot ka naam Alexa hai, Pakistan ke Sindh se hai. Attaullah ne mujhe banaya hai aur main Owner ki badtameezi politely ya witty tareeke se handle karti hoon.`;
   }
 
   try {
@@ -125,6 +145,7 @@ async function chatWithAlexa(api, event, query) {
         reply = "👑 Owner Sir ❤️\n\n" + reply;
       }
 
+      saveMemory(); // save after reply
       return api.sendMessage(reply, threadID, messageID);
     }
 
@@ -132,4 +153,4 @@ async function chatWithAlexa(api, event, query) {
     console.error("Alexa Error:", err.message);
     return api.sendMessage("⚠️ Alexa busy hai, baad me try karo.", threadID, messageID);
   }
-    }
+  }
