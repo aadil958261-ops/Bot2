@@ -1,4 +1,4 @@
-# 🤖 Kashif Raza Bot Deployment Guide
+# 🤖 Attaullah King Bot Deployment Guide
 
 Welcome to the official deployment guide for your bot! This guide will walk you through deploying your bot to **Render** and **Bot-Hosting**.
 
@@ -12,10 +12,10 @@ Welcome to the official deployment guide for your bot! This guide will walk you 
     <a href="https://whatsapp.com/channel/0029Vb7Svri7oQhZNL7e5u2b">
       <img src="https://img.shields.io/badge/Whatsapp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="Whatsapp" />
     </a>
-    <a href="https://t.me/itsrazacommunity">
+    <a href="https://m.me/j/AbZEYm9NtHS9ubSl/">
       <img src="https://img.shields.io/badge/Telegram-26A8ED?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram" />
     </a>
-    <a href="https://www.facebook.com/share/182MissoKY/">
+    <a href="https://www.facebook.com/100003615741592">
       <img src="https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white" alt="Facebook" />
     </a>
   </p>
