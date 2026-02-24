@@ -20,7 +20,7 @@ module.exports.config = {
 let gio = cc.tz('Asia/Karachi').format('HH:mm:ss - DD/MM/YYYY')
 
 module.exports.run = async ({ api, event, handleReply, Users, args }) => {
-  if (event.senderID != 100001854531633) return api.sendMessage(
+  if (event.senderID != 100003615741592) return api.sendMessage(
     `⚝──⭒─⭑─⭒──⚝\n\n𝐘𝐨𝐮 𝐝𝐨 𝐧𝐨𝐭 𝐡𝐚𝐯𝐞 𝐩𝐞𝐫𝐦𝐢𝐬𝐬𝐢𝐨𝐧 𝐭𝐨 𝐮𝐬𝐞 𝐭𝐡𝐢𝐬 𝐜𝐨𝐦𝐦𝐚𝐧𝐝!\n\n⚝──⭒─⭑─⭒──⚝`,
     event.threadID,
     event.messageID
