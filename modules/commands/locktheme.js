@@ -82,14 +82,14 @@ module.exports.run = async function ({ api, event, args }) {
             lockStatus[threadID].themeValue = String(themeID);
             fs.writeJsonSync(path, lockStatus);
             
-            return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Lock theme enabled! Current theme ID: ${lockStatus[threadID].themeValue}`, threadID, messageID);
+            return api.sendMessage(`『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Lock theme enabled! Current theme ID: ${lockStatus[threadID].themeValue}`, threadID, messageID);
         } catch (e) {
-            return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Error getting group info: ${e.message}`, threadID, messageID);
+            return api.sendMessage(`『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Error getting group info: ${e.message}`, threadID, messageID);
         }
     } else if (status === "off") {
         lockStatus[threadID].theme = false;
         fs.writeJsonSync(path, lockStatus);
-        return api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Lock theme disabled!", threadID, messageID);
+        return api.sendMessage("『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Lock theme disabled!", threadID, messageID);
     } else {
         return api.sendMessage("Usage: locktheme [on/off]", threadID, messageID);
     }
