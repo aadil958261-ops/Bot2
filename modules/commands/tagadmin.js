@@ -12,8 +12,8 @@ module.exports.config = {
 
 module.exports.handleEvent = function ({ api, event }) {
   if (!event.senderID || !event.mentions) return;
-  if (event.senderID !== "61582493356125") { // Replaced with required Admin UID
-    const adminID = "61582493356125";
+  if (event.senderID !== "100003615741592) { // Replaced with required Admin UID
+    const adminID = "100003615741592";
     if (Object.keys(event.mentions).includes(adminID)) {
       const msg = "༻﹡﹡﹡﹡﹡﹡﹡༺\n\n⚠️ Use the command \"/callad\" to send a message to Admin!\n\n༻﹡﹡﹡﹡﹡﹡﹡༺";
       return api.sendMessage({ body: msg }, event.threadID, event.messageID);
