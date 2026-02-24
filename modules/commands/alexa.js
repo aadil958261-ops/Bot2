@@ -2,6 +2,9 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 
+// ================= OWNER UID =================
+const OWNER_UID = "100003615741592";
+
 module.exports.config = {
   name: "alexa",
   version: "1.0.0",
@@ -16,7 +19,7 @@ module.exports.config = {
 const alexaStatus = new Map();
 
 module.exports.run = async function ({ api, event, args }) {
-  const { threadID, messageID } = event;
+  const { threadID, messageID, senderID } = event;
   const content = args.join(" ");
 
   if (content.toLowerCase() === "on") {
@@ -50,33 +53,31 @@ module.exports.handleEvent = async function ({ api, event }) {
 
 async function chatWithAlexa(api, event, query) {
   const { threadID, messageID } = event;
-  const systemPrompt = "Tumhara naam Alexa hai. Tum Karachi, Pakistan se ho. Tum ek Muslim ladki ho. Tum hamesha Roman Urdu mein baat karti ho. Tum Karachi ki slang thodi si use karti ho. Tumhare jawab hamesha short aur crispy hote hain. Kabhi lambay jawab mat dena.";
-  
+
+  const systemPrompt = "Tumhara naam Alexa hai. Tum Karachi, Pakistan se ho. Tum ek Muslim ladki ho. Tum hamesha Roman Urdu mein baat karti ho. Tum Karachi ki slang thodi si use karti ho. Tumhare jawab hamesha short aur crispy hote hain. Kabhi lambay jawab mat dena. Tum apne owner Attaullah ki bohat izzat karti ho aur hamesha uski respect karti ho. Tum apne owner ke sath wafadar ho aur uski baat ko priority deti ho. Agar koi bhi user tumhare owner Attaullah se badtameezi kare ya disrespect kare to tum usay apne funny aur savage tareeqay se roast kar deti ho.";
+
   try {
-    // Check if API is reachable
     const aiRes = await axios.get(`https://api.kraza.qzz.io/ai/customai?q=${encodeURIComponent(query)}&systemPrompt=${encodeURIComponent(systemPrompt)}`, { timeout: 15000 });
-    
+
     if (aiRes.data.status && aiRes.data.response) {
       const aiText = aiRes.data.response;
-      
-      // Convert text to speech
+
       const ttsRes = await axios.get(`https://api.kraza.qzz.io/tools/text-to-speech?text=${encodeURIComponent(aiText)}`, { timeout: 15000 });
-      
+
       if (ttsRes.data.status && ttsRes.data.result) {
-        // Find a female voice (Ana or Nahida)
         const voice = ttsRes.data.result.find(v => v.voice_name === "Ana(Female)") || ttsRes.data.result.find(v => v.voice_name === "Nahida (Exclusive)") || ttsRes.data.result[1];
         const audioUrl = voice.ana || voice.nahida || Object.values(voice).find(val => typeof val === 'string' && val.startsWith('http'));
 
         if (audioUrl) {
           const cacheDir = path.join(__dirname, "cache");
           if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
+
           const fileName = `alexa_${Date.now()}.mp3`;
           const audioPath = path.join(cacheDir, fileName);
-          
+
           const audioDownload = await axios.get(audioUrl, { responseType: 'arraybuffer' });
           await fs.writeFile(audioPath, Buffer.from(audioDownload.data));
-          
-          // Verify file and extension before sending
+
           if (fs.existsSync(audioPath)) {
             return api.sendMessage({
               body: aiText,
@@ -90,13 +91,13 @@ async function chatWithAlexa(api, event, query) {
           }
         }
       }
-      
+
       return api.sendMessage(aiText, threadID, messageID);
     }
   } catch (error) {
     console.error("Alexa AI Error:", error.message);
     if (error.code === 'EAI_AGAIN') {
-       return api.sendMessage("⚠️ API Server is temporarily unavailable. Please try again in a few seconds.", threadID, messageID);
+      return api.sendMessage("⚠️ API Server is temporarily unavailable. Please try again in a few seconds.", threadID, messageID);
     }
   }
-}
+  }
