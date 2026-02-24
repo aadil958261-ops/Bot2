@@ -11,9 +11,9 @@ module.exports.config = {
 };
 
 module.exports.run = async function ({ api, event, args, Currencies, Users }) {
-  if (this.config.credits !== "𝐊𝐀𝐒𝐇𝐈𝐅 𝐑𝐀𝐙𝐀")
+  if (this.config.credits !== "𝐀𝐓𝐓𝐀𝐔𝐋𝐋𝐀𝐇 𝐊𝐇𝐔𝐇𝐀𝐑𝐎")
     return api.sendMessage(
-      "⚝──⭒─⭑─⭒──⚝\n\n𝐃𝐨 𝐧𝐨𝐭 𝐜𝐡𝐚𝐧𝐠𝐞 𝐭𝐡𝐞 𝐜𝐫𝐞𝐝𝐢𝐭𝐬, 𝐬𝐞𝐭 𝐢𝐭 𝐛𝐚𝐜𝐤 𝐭𝐨 𝐊𝐀𝐒𝐇𝐈𝐅 𝐑𝐀𝐙𝐀 𝐨𝐭𝐡𝐞𝐫𝐰𝐢𝐬𝐞 𝐭𝐡𝐞 𝐜𝐨𝐦𝐦𝐚𝐧𝐝 𝐰𝐢𝐥𝐥 𝐧𝐨𝐭 𝐰𝐨𝐫𝐤.\n\n⚝──⭒─⭑─⭒──⚝",
+      "⚝──⭒─⭑─⭒──⚝\n\n𝐃𝐨 𝐧𝐨𝐭 𝐜𝐡𝐚𝐧𝐠𝐞 𝐭𝐡𝐞 𝐜𝐫𝐞𝐝𝐢𝐭𝐬, 𝐬𝐞𝐭 𝐢𝐭 𝐛𝐚𝐜𝐤 𝐭𝐨 𝐀𝐓𝐓𝐀𝐔𝐋𝐋𝐀𝐇 𝐊𝐇𝐔𝐇𝐀𝐑𝐎 𝐨𝐭𝐡𝐞𝐫𝐰𝐢𝐬𝐞 𝐭𝐡𝐞 𝐜𝐨𝐦𝐦𝐚𝐧𝐝 𝐰𝐢𝐥𝐥 𝐧𝐨𝐭 𝐰𝐨𝐫𝐤.\n\n⚝──⭒─⭑─⭒──⚝",
       event.threadID,
       event.messageID
     );
