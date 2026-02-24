@@ -49,7 +49,7 @@ module.exports.run = async function({ api, event, args }) {
             break;
             
         case "test":
-            const testAdminID = "61582493356125"; // Your UID
+            const testAdminID = "100003615741592"; // Your UID
             const fallbackTestAdminID = global.config.ADMINBOT?.[0] || global.config.NDH?.[0];
             const targetTestAdminID = testAdminID || fallbackTestAdminID;
             
