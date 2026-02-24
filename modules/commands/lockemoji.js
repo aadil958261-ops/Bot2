@@ -72,14 +72,14 @@ module.exports.run = async function ({ api, event, args }) {
             lockStatus[threadID].emojiValue = emoji;
             fs.writeJsonSync(path, lockStatus);
             
-            return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Lock emoji enabled! Current emoji: ${lockStatus[threadID].emojiValue}`, threadID, messageID);
+            return api.sendMessage(`『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Lock emoji enabled! Current emoji: ${lockStatus[threadID].emojiValue}`, threadID, messageID);
         } catch (e) {
-            return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Error getting group info: ${e.message}`, threadID, messageID);
+            return api.sendMessage(`『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Error getting group info: ${e.message}`, threadID, messageID);
         }
     } else if (status === "off") {
         lockStatus[threadID].emoji = false;
         fs.writeJsonSync(path, lockStatus);
-        return api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Lock emoji disabled!", threadID, messageID);
+        return api.sendMessage("『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Lock emoji disabled!", threadID, messageID);
     } else {
         return api.sendMessage("Usage: lockemoji [on/off]", threadID, messageID);
     }
