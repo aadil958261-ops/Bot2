@@ -41,5 +41,5 @@ module.exports.run = function({
         status,
         num: +event.args[1]
     }
-    api.sendMessage(`༻﹡﹡﹡﹡﹡﹡﹡༺\n**${status ? 'Enabled' : 'Disabled'} auto leave for groups with fewer than ${event.args[1]} members by **Kashif Raza****\n༻﹡﹡﹡﹡﹡﹡﹡༺`, event.threadID, event.messageID);
+    api.sendMessage(`༻﹡﹡﹡﹡﹡﹡﹡༺\n**${status ? 'Enabled' : 'Disabled'} auto leave for groups with fewer than ${event.args[1]} members by **Attaullah Sindhi****\n༻﹡﹡﹡﹡﹡﹡﹡༺`, event.threadID, event.messageID);
 };
