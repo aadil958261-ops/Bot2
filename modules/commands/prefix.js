@@ -135,7 +135,7 @@ module.exports.handleReaction = async ({ event, api, handleReaction, client }) =
 💓 Prefix: ${global.config.PREFIX}`;
 
   try {
-    const picture = (await axios.get(`https://i.imgur.com/m4ruygS.jpg`, { responseType: "stream" })).data;
+    const picture = (await axios.get(`https://files.catbox.moe/bsrwiq.jpg`, { responseType: "stream" })).data;
     return api.sendMessage({
       body: msg,
       attachment: picture
