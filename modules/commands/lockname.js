@@ -29,7 +29,7 @@ module.exports.handleEvent = async function ({ api, event }) {
 
             const savedName = lockStatus[threadID].nameValue;
             if (savedName) {
-                api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Group name is locked. Reverting change...", threadID);
+                api.sendMessage("『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Group name is locked. Reverting change...", threadID);
                 return api.setTitle(savedName, threadID);
             }
         }
@@ -50,11 +50,11 @@ module.exports.run = async function ({ api, event, args }) {
         lockStatus[threadID].name = true;
         lockStatus[threadID].nameValue = threadInfo.threadName || threadInfo.name;
         fs.writeJsonSync(path, lockStatus);
-        return api.sendMessage(`『 𝗥𝗮𝘇𝗮 』→ Lock name enabled!\nCurrent name: ${lockStatus[threadID].nameValue}`, threadID, messageID);
+        return api.sendMessage(`『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Lock name enabled!\nCurrent name: ${lockStatus[threadID].nameValue}`, threadID, messageID);
     } else if (status === "off") {
         lockStatus[threadID].name = false;
         fs.writeJsonSync(path, lockStatus);
-        return api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Lock name disabled!", threadID, messageID);
+        return api.sendMessage("『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Lock name disabled!", threadID, messageID);
     } else {
         return api.sendMessage("Usage: lockname [on/off]", threadID, messageID);
     }
