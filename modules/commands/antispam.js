@@ -35,9 +35,9 @@ module.exports.handleEvent = async function({ api, event }) {
         if (usersSpam[senderID].count > settings.spamCount && settings.status) {
             api.removeUserFromGroup(senderID, threadID);
             api.sendMessage({
-                body: `⚝──⭒─⭑─⭒──⚝\n**User **Kashif Raza** automatically kicked due to spam**\n⚝──⭒─⭑─⭒──⚝`,
+                body: `⚝──⭒─⭑─⭒──⚝\n**User **Attaullah Sindhi** automatically kicked due to spam**\n⚝──⭒─⭑─⭒──⚝`,
                 mentions: [{
-                    tag: `**Kashif Raza**`,
+                    tag: `**Attaullah Sindhi**`,
                     id: senderID
                 }]
             }, threadID);
