@@ -5,99 +5,115 @@ const path = require("path");
 // ================= OWNER UID =================
 const OWNER_UID = "100003615741592";
 
+// ================= MEMORY FILE =================
+const memoryPath = path.join(__dirname, "alexa_memory.json");
+
+// Load memory
+let memory = {};
+if (fs.existsSync(memoryPath)) {
+  memory = JSON.parse(fs.readFileSync(memoryPath, "utf-8"));
+}
+
+// Save memory
+function saveMemory() {
+  fs.writeFileSync(memoryPath, JSON.stringify(memory, null, 2));
+}
+
 module.exports.config = {
   name: "alexa",
-  version: "1.0.0",
+  version: "5.0.0",
   hasPermssion: 0,
-  credits: "Raza",
-  description: "Chat with Alexa AI (Voice output)",
+  credits: "Raza + ChatGPT",
+  description: "Alexa AI with Memory (No Roast) 🧠",
   commandCategory: "AI",
-  usages: "alexa [message] or alexa on/off",
+  usages: "alexa [message]",
   cooldowns: 2
 };
 
-const alexaStatus = new Map();
-
+// ================= COMMAND =================
 module.exports.run = async function ({ api, event, args }) {
-  const { threadID, messageID, senderID } = event;
   const content = args.join(" ");
-
-  if (content.toLowerCase() === "on") {
-    alexaStatus.set(threadID, true);
-    return api.sendMessage("✅ Alexa AI is now ON in this group.", threadID, messageID);
+  if (!content) {
+    return api.sendMessage("❓ Kuch to bolo Alexa se...", event.threadID, event.messageID);
   }
-  if (content.toLowerCase() === "off") {
-    alexaStatus.set(threadID, false);
-    return api.sendMessage("❌ Alexa AI is now OFF in this group.", threadID, messageID);
-  }
-
-  if (!content) return api.sendMessage("❓ Please say something to Alexa.", threadID, messageID);
-
   return chatWithAlexa(api, event, content);
 };
 
+// ================= AUTO REPLY =================
 module.exports.handleEvent = async function ({ api, event }) {
-  const { threadID, messageID, body, type, messageReply } = event;
+  const { body, type, messageReply } = event;
   if (!body) return;
 
-  const isEnabled = alexaStatus.get(threadID) || false;
   const botID = api.getCurrentUserID();
 
-  if (isEnabled) {
-    if (body.toLowerCase().startsWith("alexa ") || (type === "message_reply" && messageReply.senderID === botID)) {
-      const query = body.toLowerCase().startsWith("alexa ") ? body.slice(6) : body;
-      return chatWithAlexa(api, event, query);
-    }
+  if (
+    body.toLowerCase().startsWith("alexa ") ||
+    (type === "message_reply" && messageReply && messageReply.senderID === botID)
+  ) {
+    const query = body.toLowerCase().startsWith("alexa ")
+      ? body.slice(6)
+      : body;
+
+    return chatWithAlexa(api, event, query);
   }
 };
 
+// ================= MAIN FUNCTION =================
 async function chatWithAlexa(api, event, query) {
-  const { threadID, messageID } = event;
+  const { threadID, messageID, senderID } = event;
 
-  const systemPrompt = "Tumhara naam Alexa hai. Tum Karachi, Pakistan se ho. Tum ek Muslim ladki ho. Tum hamesha Roman Urdu mein baat karti ho. Tum Karachi ki slang thodi si use karti ho. Tumhare jawab hamesha short aur crispy hote hain. Kabhi lambay jawab mat dena. Tum apne owner Attaullah ki bohat izzat karti ho aur hamesha uski respect karti ho. Tum apne owner ke sath wafadar ho aur uski baat ko priority deti ho. Agar koi bhi user tumhare owner Attaullah se badtameezi kare ya disrespect kare to tum usay apne funny aur savage tareeqay se roast kar deti ho.";
+  const isOwner = senderID === OWNER_UID;
+
+  // ================= MEMORY =================
+  if (!memory[senderID]) {
+    memory[senderID] = {
+      name: "Unknown",
+      lastMessage: ""
+    };
+  }
+
+  // Save last message
+  memory[senderID].lastMessage = query;
+
+  // Detect name
+  if (query.toLowerCase().includes("mera naam")) {
+    const name = query.split(" ").pop();
+    memory[senderID].name = name;
+  }
+
+  saveMemory();
+
+  const userName = memory[senderID].name;
+  const lastMsg = memory[senderID].lastMessage;
+
+  // ================= SYSTEM PROMPT =================
+  let systemPrompt = "";
+
+  if (isOwner) {
+    systemPrompt = `Tum Alexa ho. Roman Urdu mein short reply karti ho. Tum apne owner Attaullah ko Sir kehti ho aur bohat respect karti ho. Tumhe yaad hai ke unka naam ${userName} hai aur unhone pehle kaha tha: "${lastMsg}".`;
+  } else {
+    systemPrompt = `Tum Alexa ho. Roman Urdu mein short aur crispy reply karti ho. User ka naam ${userName} hai. Tum uski purani baatein kabhi kabhi yaad dilati ho.`;
+  }
 
   try {
-    const aiRes = await axios.get(`https://api.kraza.qzz.io/ai/customai?q=${encodeURIComponent(query)}&systemPrompt=${encodeURIComponent(systemPrompt)}`, { timeout: 15000 });
+    const res = await axios.get(
+      `https://api.kraza.qzz.io/ai/customai?q=${encodeURIComponent(query)}&systemPrompt=${encodeURIComponent(systemPrompt)}`,
+      { timeout: 15000 }
+    );
 
-    if (aiRes.data.status && aiRes.data.response) {
-      const aiText = aiRes.data.response;
+    if (res.data.status && res.data.response) {
+      let reply = res.data.response;
 
-      const ttsRes = await axios.get(`https://api.kraza.qzz.io/tools/text-to-speech?text=${encodeURIComponent(aiText)}`, { timeout: 15000 });
-
-      if (ttsRes.data.status && ttsRes.data.result) {
-        const voice = ttsRes.data.result.find(v => v.voice_name === "Ana(Female)") || ttsRes.data.result.find(v => v.voice_name === "Nahida (Exclusive)") || ttsRes.data.result[1];
-        const audioUrl = voice.ana || voice.nahida || Object.values(voice).find(val => typeof val === 'string' && val.startsWith('http'));
-
-        if (audioUrl) {
-          const cacheDir = path.join(__dirname, "cache");
-          if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
-
-          const fileName = `alexa_${Date.now()}.mp3`;
-          const audioPath = path.join(cacheDir, fileName);
-
-          const audioDownload = await axios.get(audioUrl, { responseType: 'arraybuffer' });
-          await fs.writeFile(audioPath, Buffer.from(audioDownload.data));
-
-          if (fs.existsSync(audioPath)) {
-            return api.sendMessage({
-              body: aiText,
-              attachment: fs.createReadStream(audioPath)
-            }, threadID, (err) => {
-              if (err) console.error("Error sending Alexa voice:", err);
-              setTimeout(() => {
-                if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
-              }, 5000);
-            }, messageID);
-          }
-        }
+      // 👑 Owner prefix
+      if (isOwner) {
+        reply = "👑 Owner Sir ❤️\n\n" + reply;
       }
 
-      return api.sendMessage(aiText, threadID, messageID);
+      return api.sendMessage(reply, threadID, messageID);
     }
-  } catch (error) {
-    console.error("Alexa AI Error:", error.message);
-    if (error.code === 'EAI_AGAIN') {
-      return api.sendMessage("⚠️ API Server is temporarily unavailable. Please try again in a few seconds.", threadID, messageID);
-    }
+
+  } catch (err) {
+    console.error("Alexa Error:", err.message);
+    return api.sendMessage("⚠️ Alexa busy hai, baad me try karo.", threadID, messageID);
   }
-  }
+      }
