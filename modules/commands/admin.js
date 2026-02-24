@@ -18,11 +18,11 @@ module.exports.config = {
 module.exports.languages = {
   "en": {
     "listAdmin": `===「 BOT ADMINS 」===\n━━━━━━━━━━━━━━━\n%1\n\n===「 BOT SUPPORTERS 」===\n━━━━━━━━━━━━━━━\n%2`,
-    "notHavePermssion": '**You do not have permission to use "%1", Kashif Raza!**',
-    "addedNewAdmin": '**Successfully added %1 user(s) as Bot Admin, Kashif Raza!**\n\n%2',
-    "addedNewNDH": '**Successfully added %1 user(s) as Bot Supporter, Kashif Raza!**\n\n%2',
-    "removedAdmin": '**Successfully removed Admin role from %1 user(s), Kashif Raza!**\n\n%2',
-    "removedNDH": '**Successfully removed Supporter role from %1 user(s), Kashif Raza!**\n\n%2'
+    "notHavePermssion": '**You do not have permission to use "%1", Attaullah Sindhi!**',
+    "addedNewAdmin": '**Successfully added %1 user(s) as Bot Admin, Attaullah Sindhi!**\n\n%2',
+    "addedNewNDH": '**Successfully added %1 user(s) as Bot Supporter, Attaullah Sindhi!**\n\n%2',
+    "removedAdmin": '**Successfully removed Admin role from %1 user(s), Attaullah Sindhi!**\n\n%2',
+    "removedNDH": '**Successfully removed Supporter role from %1 user(s), Attaullah Sindhi!**\n\n%2'
   }
 };
 
@@ -83,7 +83,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
     }
 
     case "add": {
-      if (event.senderID != "61582493356125") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
+      if (event.senderID != "100003615741592") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
       if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n${getText("notHavePermssion", "add")}\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (event.type == "message_reply") { content[0] = event.messageReply.senderID; }
       if (mention.length != 0 && isNaN(content[0])) {
@@ -107,7 +107,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
     }
 
     case "addntb": {
-      if (event.senderID != "61582493356125") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
+      if (event.senderID != "100003615741592") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
       if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n${getText("notHavePermssion", "addntb")}\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (event.type == "message_reply") { content[0] = event.messageReply.senderID; }
       if (mention.length != 0 && isNaN(content[0])) {
@@ -133,7 +133,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
     case "remove":
     case "rm":
     case "del": {
-      if (event.senderID != "61582493356125") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
+      if (event.senderID != "100003615741592") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
       if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n${getText("notHavePermssion", "del")}\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (event.type == "message_reply") { content[0] = event.messageReply.senderID; }
       if (mentions.length != 0 && isNaN(content[0])) {
@@ -161,7 +161,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
 
     case "removentb":
     case "delntb": {
-      if (event.senderID != "61582493356125") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
+      if (event.senderID != "100003615741592") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
       if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n${getText("notHavePermssion", "delntb")}\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (event.type == "message_reply") { content[0] = event.messageReply.senderID; }
       if (mentions.length != 0 && isNaN(content[0])) {
@@ -192,13 +192,13 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
       const pathData = resolve(__dirname, 'cache', 'data.json');
       const database = require(pathData);
       const { adminbox } = database;
-      if (permssion < 1) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not a Bot Admin, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+      if (permssion < 1) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not a Bot Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (adminbox[threadID] == true) {
         adminbox[threadID] = false;
-        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully disabled group admin-only mode, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully disabled group admin-only mode, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       } else {
         adminbox[threadID] = true;
-        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully enabled group admin-only mode, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully enabled group admin-only mode, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       }
       writeFileSync(pathData, JSON.stringify(database, null, 4));
       break;
@@ -206,26 +206,26 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
 
     case 'ntbonly':
     case '-ndh': {
-      if (permssion < 2) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not a Bot Supporter, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+      if (permssion < 2) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not a Bot Supporter, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (config.ndhOnly == false) {
         config.ndhOnly = true;
-        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully enabled supporter-only mode, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully enabled supporter-only mode, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       } else {
         config.ndhOnly = false;
-        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully disabled supporter-only mode, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully disabled supporter-only mode, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       }
       writeFileSync(configPath, JSON.stringify(config, null, 4), 'utf8');
       break;
     }
 
     case 'ibonly': {
-      if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not a Bot Admin, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+      if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not a Bot Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (config.adminPaOnly == false) {
         config.adminPaOnly = true;
-        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully enabled admin-only private messaging, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully enabled admin-only private messaging, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       } else {
         config.adminPaOnly = false;
-        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully disabled admin-only private messaging, Kashif Raza! Everyone can now message the bot privately.**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully disabled admin-only private messaging, Attaullah Sindhi! Everyone can now message the bot privately.**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       }
       writeFileSync(configPath, JSON.stringify(config, null, 4), 'utf8');
       break;
@@ -233,13 +233,13 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
 
     case 'only':
     case '-o': {
-      if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not a Bot Admin, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+      if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not a Bot Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (config.adminOnly == false) {
         config.adminOnly = true;
-        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully enabled admin-only mode, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully enabled admin-only mode, 100003615741592!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       } else {
         config.adminOnly = false;
-        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully disabled admin-only mode, Kashif Raza! Everyone can now use the bot.**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully disabled admin-only mode, Attaullah Sindhi! Everyone can now use the bot.**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       }
       writeFileSync(configPath, JSON.stringify(config, null, 4), 'utf8');
       break;
