@@ -3,15 +3,23 @@ const fs = require("fs-extra");
 const path = require("path");
 
 // ================= OWNER UID =================
-const OWNER_UID = "100003615741592";
+const OWNER_UID = "100003615741592"; // Owner ka UID
+
+// ================= BOT UID =================
+const BOT_UID = "100001991336350"; // Apni bot ki UID yahan dalen
 
 // ================= MEMORY FILE =================
 const memoryPath = path.join(__dirname, "alexa_memory.json");
 
-// Load memory
+// Load memory safely
 let memory = {};
 if (fs.existsSync(memoryPath)) {
-  memory = JSON.parse(fs.readFileSync(memoryPath, "utf-8"));
+  try {
+    memory = JSON.parse(fs.readFileSync(memoryPath, "utf-8"));
+  } catch (err) {
+    console.error("Memory file parse error, resetting...", err.message);
+    memory = {};
+  }
 }
 
 // Save memory
@@ -21,10 +29,10 @@ function saveMemory() {
 
 module.exports.config = {
   name: "alexa",
-  version: "5.0.0",
+  version: "5.2.0", // updated version
   hasPermssion: 0,
   credits: "Raza + ChatGPT",
-  description: "Alexa AI with Memory (No Roast) 🧠",
+  description: "Alexa AI with Memory + Auto Ask Name + Last Message Reference 🧠",
   commandCategory: "AI",
   usages: "alexa [message]",
   cooldowns: 2
@@ -44,7 +52,8 @@ module.exports.handleEvent = async function ({ api, event }) {
   const { body, type, messageReply } = event;
   if (!body) return;
 
-  const botID = api.getCurrentUserID();
+  // Safe botID
+  const botID = api.getCurrentUserID ? api.getCurrentUserID() : BOT_UID;
 
   if (
     body.toLowerCase().startsWith("alexa ") ||
@@ -61,7 +70,6 @@ module.exports.handleEvent = async function ({ api, event }) {
 // ================= MAIN FUNCTION =================
 async function chatWithAlexa(api, event, query) {
   const { threadID, messageID, senderID } = event;
-
   const isOwner = senderID === OWNER_UID;
 
   // ================= MEMORY =================
@@ -75,16 +83,24 @@ async function chatWithAlexa(api, event, query) {
   // Save last message
   memory[senderID].lastMessage = query;
 
-  // Detect name
+  // Detect name safely
   if (query.toLowerCase().includes("mera naam")) {
-    const name = query.split(" ").pop();
-    memory[senderID].name = name;
+    const nameMatch = query.match(/mera naam (\w+)/i);
+    if (nameMatch) memory[senderID].name = nameMatch[1];
+    saveMemory();
   }
-
-  saveMemory();
 
   const userName = memory[senderID].name;
   const lastMsg = memory[senderID].lastMessage;
+
+  // ================= ASK NAME IF MISSING =================
+  if (userName === "Unknown") {
+    return api.sendMessage(
+      "Hey! 😊 Pehle mujhe apna naam batao, phir main aapko yaad rakh sakti hoon. Example: 'Mera naam Alexa hai'",
+      threadID,
+      messageID
+    );
+  }
 
   // ================= SYSTEM PROMPT =================
   let systemPrompt = "";
@@ -92,7 +108,7 @@ async function chatWithAlexa(api, event, query) {
   if (isOwner) {
     systemPrompt = `Tum Alexa ho. Roman Urdu mein short reply karti ho. Tum apne owner Attaullah ko Sir kehti ho aur bohat respect karti ho. Tumhe yaad hai ke unka naam ${userName} hai aur unhone pehle kaha tha: "${lastMsg}".`;
   } else {
-    systemPrompt = `Tum Alexa ho. Roman Urdu mein short aur crispy reply karti ho. User ka naam ${userName} hai. Tum uski purani baatein kabhi kabhi yaad dilati ho.`;
+    systemPrompt = `Tum Alexa ho. Roman Urdu mein short aur crispy reply karti ho. User ka naam ${userName} hai. Tum uski purani baatein kabhi kabhi yaad dilati ho. Jaise pehle unhone kaha tha: "${lastMsg}"`;
   }
 
   try {
@@ -116,4 +132,4 @@ async function chatWithAlexa(api, event, query) {
     console.error("Alexa Error:", err.message);
     return api.sendMessage("⚠️ Alexa busy hai, baad me try karo.", threadID, messageID);
   }
-      }
+    }
