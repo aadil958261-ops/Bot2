@@ -31,14 +31,14 @@ module.exports.run = async function ({ api, event, args }) {
             lockStatus[threadID].dp = true;
             lockStatus[threadID].imageSrc = threadInfo.imageSrc;
             fs.writeJsonSync(path, lockStatus);
-            return api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Lock DP enabled! I will prevent changes.", threadID, messageID);
+            return api.sendMessage("『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Lock DP enabled! I will prevent changes.", threadID, messageID);
         } catch (e) {
-            return api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Error enabling Lock DP: " + e.message, threadID, messageID);
+            return api.sendMessage("『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Error enabling Lock DP: " + e.message, threadID, messageID);
         }
     } else if (status === "off") {
         lockStatus[threadID].dp = false;
         fs.writeJsonSync(path, lockStatus);
-        return api.sendMessage("『 𝗥𝗮𝘇𝗮 』→ Lock DP disabled!", threadID, messageID);
+        return api.sendMessage("『 𝗔𝘁𝘁𝗮𝘂𝗹𝗹𝗮𝗵 』→ Lock DP disabled!", threadID, messageID);
     } else {
         return api.sendMessage("Usage: lockdp [on/off]", threadID, messageID);
     }
