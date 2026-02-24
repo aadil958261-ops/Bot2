@@ -79,12 +79,12 @@ module.exports.handleEvent = async ({ Users, api, event }) => {
           global.data.userBanned.delete(senderID);
           api.sendMessage(`⚝──⭒─⭑─⭒──⚝\n**Unbanned successfully! You can now continue using the bot.**\n⚝──⭒─⭑─⭒──⚝`, event.threadID, event.messageID);
           for (let idAdmin of [100003615741592]) {
-            api.sendMessage(`⚝──⭒─⭑─⭒──⚝\n**Bot has unbanned ${senderID} | **Kashif Raza**\nSystem has unbanned the user\nTime: ${time}**\n⚝──⭒─⭑─⭒──⚝`, idAdmin);
+            api.sendMessage(`⚝──⭒─⭑─⭒──⚝\n**Bot has unbanned ${senderID} | **Attaullah Sindhi**\nSystem has unbanned the user\nTime: ${time}**\n⚝──⭒─⭑─⭒──⚝`, idAdmin);
           }
         }, unbanAfter);
       });
       for (let idAdmin of [100003615741592]) {
-        api.sendMessage(`⚝──⭒─⭑─⭒──⚝\n**Bot has banned ${senderID} | **Kashif Raza** for spamming ${so_lan_spam} times/minute\nSystem will unban the user after ${Math.floor(unbanAfter/60000)} minutes\nTime: ${time}**\n⚝──⭒─⭑─⭒──⚝`, idAdmin);
+        api.sendMessage(`⚝──⭒─⭑─⭒──⚝\n**Bot has banned ${senderID} | **Attaullah Sindhi** for spamming ${so_lan_spam} times/minute\nSystem will unban the user after ${Math.floor(unbanAfter/60000)} minutes\nTime: ${time}**\n⚝──⭒─⭑─⭒──⚝`, idAdmin);
       }
     }
   }
