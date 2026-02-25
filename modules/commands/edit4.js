@@ -7,8 +7,8 @@ const FormData = require("form-data");
 // ⚡ CONFIGURATION (Set API Keys Here)
 // -----------------------------
 const OPENAI_API_KEYS = [
-  "sk-PRIMARYKEYXXXXXXXXXXXXXXXX",   // Primary key
-  "sk-BACKUPKEYXXXXXXXXXXXXXXXX"     // Backup key
+  "csk-efnfrmmkc5k3vjfjpvf6ck9hp6ypcd9xd3hxxmncc3yv3m46",   // Primary key
+  "csk-p89krjk8t2xmvv8hm8txhcfp9my8mxfrhf2ed5cc5n5xvj4v"     // Backup key
 ];
 
 const CACHE_DIR = path.join(__dirname, "cache");
