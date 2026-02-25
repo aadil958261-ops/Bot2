@@ -6,7 +6,7 @@ const FormData = require("form-data");
 // -----------------------------
 // ⚡ CONFIGURATION (Set API Keys Here)
 // -----------------------------
-const OPENAI_API_KEYS = [
+const CEREBRAS_API_KEYS = [
   "csk-efnfrmmkc5k3vjfjpvf6ck9hp6ypcd9xd3hxxmncc3yv3m46",   // Primary key
   "csk-p89krjk8t2xmvv8hm8txhcfp9my8mxfrhf2ed5cc5n5xvj4v"     // Backup key
 ];
@@ -16,10 +16,10 @@ if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR);
 
 module.exports.config = {
   name: "edit4",
-  version: "1.7.0",
+  version: "1.7.1",
   hasPermssion: 0,
   credits: "ATTAULLAH",
-  description: "Stylish image editing & logo creation with API fallback & button listener",
+  description: "Stylish image editing & logo creation with Cerebras.ai API fallback & button listener",
   commandCategory: "Media",
   usages: "[prompt] - Reply to image\n.logo [prompt] - Generate logo",
   prefix: true,
@@ -55,20 +55,20 @@ Use command:
 }
 
 // -----------------------------
-// ⚡ API CALL WITH FALLBACK
+// ⚡ CEREBRAS.AI CALL WITH FALLBACK
 // -----------------------------
-async function callOpenAI(form, endpoint = "edits") {
-  for (let i = 0; i < OPENAI_API_KEYS.length; i++) {
+async function callCerebras(form, endpointPath) {
+  for (let i = 0; i < CEREBRAS_API_KEYS.length; i++) {
     try {
-      const url = `https://api.openai.com/v1/images/${endpoint}`;
+      const url = `https://api.cerebras.net/v1/${endpointPath}`;
       const response = await axios.post(url, form, {
-        headers: { ...form.getHeaders(), Authorization: `Bearer ${OPENAI_API_KEYS[i]}` },
+        headers: { ...form.getHeaders(), Authorization: `Bearer ${CEREBRAS_API_KEYS[i]}` },
         timeout: 120000
       });
-      if (response.data?.data?.length > 0) return response;
+      if (response.data) return response;
     } catch (err) {
-      console.log(`⚠️ API key #${i + 1} failed: ${err.message}`);
-      if (i === OPENAI_API_KEYS.length - 1) throw err;
+      console.log(`⚠️ Cerebras key #${i + 1} failed: ${err.message}`);
+      if (i === CEREBRAS_API_KEYS.length - 1) throw err;
     }
   }
 }
@@ -80,9 +80,9 @@ async function sendStyleSelector(api, threadID, messageID, prompt) {
   let body = `🎨 Choose a style for your image:\nPrompt: ${prompt}`;
   const buttons = styles.map(style => ({
     type: "reply",
-    reply: { id: `style_${style}_${Date.now()}`, title: style }
+    reply: { id: `style_${style}`, title: style }
   }));
-  buttons.push({ type: "reply", reply: { id: `style_cancel_${Date.now()}`, title: "Cancel" } });
+  buttons.push({ type: "reply", reply: { id: "style_cancel", title: "Cancel" } });
   return api.sendMessage({ body, buttons }, threadID, messageID);
 }
 
@@ -95,22 +95,23 @@ async function handleStyleSelection(api, threadID, style, imageUrl, prompt) {
   const processingMsg = await api.sendMessage(`🎨 Applying ${style} style...\n⏳ Please wait...`, threadID);
 
   try {
-    // Download image
+    // Download original image
     const imagePath = path.join(CACHE_DIR, `input_${Date.now()}.png`);
     const imgResp = await axios({ url: imageUrl, method: "GET", responseType: "stream" });
     const writer = fs.createWriteStream(imagePath);
     imgResp.data.pipe(writer);
     await new Promise((res, rej) => writer.on("finish", res).on("error", rej));
 
-    // OpenAI edit
+    // Cerebras AI edit
     const styledPrompt = `Stylish ${style} edit: ${prompt}. Use vibrant colors, creative fonts, modern aesthetics.`;
     const form = new FormData();
-    form.append("model", "gpt-image-1");
     form.append("image", fs.createReadStream(imagePath));
     form.append("prompt", styledPrompt);
+    form.append("size", "1024x1024");
 
-    const response = await callOpenAI(form, "edits");
-    const resultUrl = response.data?.data[0]?.url;
+    const response = await callCerebras(form, "images/edits");
+    const resultUrl = response.data?.output_image; // adjust field based on Cerebras.ai response
+
     if (!resultUrl) throw new Error("No edited image returned");
 
     // Download edited image
@@ -143,12 +144,12 @@ async function generateLogo(api, threadID, prompt) {
 
   try {
     const form = new FormData();
-    form.append("model", "gpt-image-1");
     form.append("prompt", `Logo design: ${prompt}. Minimalist, vector style, transparent background, high quality`);
     form.append("size", "1024x1024");
 
-    const response = await callOpenAI(form, "generations");
-    const resultUrl = response.data?.data[0]?.url;
+    const response = await callCerebras(form, "images/generate");
+    const resultUrl = response.data?.output_image; // adjust field based on Cerebras.ai response
+
     if (!resultUrl) throw new Error("No logo image returned");
 
     const logoPath = path.join(CACHE_DIR, `logo_${Date.now()}.png`);
@@ -175,25 +176,19 @@ async function generateLogo(api, threadID, prompt) {
 // ⚡ BUTTON CLICK LISTENER
 // -----------------------------
 module.exports.onReply = async ({ api, event, replyIdStore }) => {
-  const { messageID, body, senderID } = event;
-
-  // Parse reply id to detect style
+  const { messageID, body, senderID, threadID } = event;
   if (!body || !body.startsWith("style_")) return;
-  const parts = body.split("_");
-  const action = parts[1];
 
+  const action = body.replace("style_", "");
   if (action === "cancel") {
     api.unsendMessage(messageID);
     return;
   }
 
-  const style = action;
-  const originalImageUrl = replyIdStore?.[senderID]?.imageUrl;
-  const prompt = replyIdStore?.[senderID]?.prompt;
+  const { imageUrl, prompt } = replyIdStore?.[senderID] || {};
+  if (!imageUrl || !prompt) return;
 
-  if (!originalImageUrl || !prompt) return;
-
-  handleStyleSelection(api, event.threadID, style, originalImageUrl, prompt);
+  handleStyleSelection(api, threadID, action, imageUrl, prompt);
   api.unsendMessage(messageID);
 };
 
@@ -201,26 +196,29 @@ module.exports.onReply = async ({ api, event, replyIdStore }) => {
 // ⚡ MAIN RUN
 // -----------------------------
 module.exports.run = async ({ api, event, args, commandName, replyIdStore }) => {
-  const { threadID, messageID, messageReply } = event;
+  const { threadID, messageID, messageReply, senderID } = event;
 
   if (commandName === "edit4") {
-    if (!messageReply || !messageReply.attachments || messageReply.attachments.length === 0) return sendHelp(api, threadID);
+    if (!messageReply || !messageReply.attachments || messageReply.attachments.length === 0) {
+      return api.sendMessage("❌ Please reply to an image to use .edit4", threadID);
+    }
     const attachment = messageReply.attachments[0];
-    if (attachment.type !== "photo") return sendHelp(api, threadID);
+    if (attachment.type !== "photo") {
+      return api.sendMessage("❌ The attachment must be an image", threadID);
+    }
 
     const prompt = args.join(" ").trim();
-    if (!prompt) return sendHelp(api, threadID);
+    if (!prompt) return api.sendMessage("❌ Please provide a prompt for styling the image", threadID);
 
     // Store original image & prompt for button listener
-    replyIdStore[event.senderID] = { imageUrl: attachment.url, prompt };
-
+    replyIdStore[senderID] = { imageUrl: attachment.url, prompt };
     await sendStyleSelector(api, threadID, messageID, prompt);
 
   } else if (commandName === "logo") {
     const prompt = args.join(" ").trim();
-    if (!prompt) return sendHelp(api, threadID);
-
+    if (!prompt) return api.sendMessage("❌ Please provide a prompt for logo generation", threadID);
     await generateLogo(api, threadID, prompt);
+
   } else {
     sendHelp(api, threadID);
   }
