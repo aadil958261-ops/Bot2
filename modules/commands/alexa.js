@@ -1,201 +1,149 @@
 const axios = require("axios");
-const fs = require("fs-extra");
+const fs = require("fs");
 const path = require("path");
 
-// ================= OWNER INFO =================
-const OWNER_UID = "100003615741592";
-const OWNER_NAME = "Attaullah";
-const BOT_UID = "61586016755061";
-
-// ================= MEMORY =================
-const memoryPath = path.join(__dirname, "haniya_memory.json");
-let memory = {};
-
-if (fs.existsSync(memoryPath)) {
-  try {
-    memory = JSON.parse(fs.readFileSync(memoryPath, "utf-8"));
-  } catch (err) {
-    console.error("Memory load error:", err.message);
-  }
-}
-
-if (!memory.users) memory.users = {};
-memory.owner = OWNER_NAME;
-
-function saveMemory() {
-  fs.writeFileSync(memoryPath, JSON.stringify(memory, null, 2));
-}
-
-// ================= EXTRA SYSTEMS =================
-const ABUSE_KEYWORDS = ["local","idiot","bewakoof","chutiya","gadha","ullu","haram","bsdk"];
-
-const FLIRTY_LINES = [
-  "Tum na… ajeeb ho 😏 itne cute kyun ho?",
-  "Sach batao… mujhe miss kar rahe the na? ❤️",
-  "Tumhari vibes hi alag hain 💕",
-  "Main thodi possessive hoon… tum sirf mere ho 😏",
-  "Tumhari baatein addictive hain 💋"
-];
-
-function getFlirtyLine(isOwner) {
-  const line = FLIRTY_LINES[Math.floor(Math.random() * FLIRTY_LINES.length)];
-  return isOwner ? line + " 😘" : "Zyada close mat aao… lekin interesting ho 😏";
-}
-
-// Jealous tracker
-const jealousTracker = {};
-
-// ================= PROMPT =================
-const SYSTEM_PROMPT = `Tumhara naam Haniya hai.
-Tum ek romantic, naughty aur loyal girlfriend ho.
-
-Owner ${OWNER_NAME} hai ❤️
-Owner ke liye soft + romantic
-Dusron ke liye savage 😏
-Short Hinglish replies do
-`;
-
-// ================= CONFIG =================
 module.exports.config = {
-  name: "haniya",
-  version: "11.0.0",
+    name: "haniya",
+  version: "3.0.0",
   hasPermssion: 0,
-  credits: "Attaullah + ChatGPT",
+  credits: "Attaullah",
   description: "Ultimate GF AI",
   commandCategory: "AI",
   usages: "haniya [msg]",
-  cooldowns: 2
+  cooldowns: 5,
 };
 
-// ================= RUN =================
-module.exports.run = async function ({ api, event, args }) {
-  const msg = args.join(" ");
-  if (!msg) return api.sendMessage("Kahan ho jaan? ❤️", event.threadID);
-  return chatWithHaniya(api, event, msg);
-};
+// --- CONFIGURATION ---
+// 👇👇👇 APNI API KEY NICHE DAALO 👇👇👇
 
-// ================= HANDLE =================
-module.exports.handleEvent = async function ({ api, event }) {
-  const { body, senderID, messageReply, type } = event;
-  if (!body || senderID === api.getCurrentUserID()) return;
+const GROQ_API_KEY = "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";
 
-  const botID = api.getCurrentUserID ? api.getCurrentUserID() : BOT_UID;
-  const text = body.toLowerCase();
+// 👆👆👆 --------------------------- 👆👆👆
 
-  if (
-    text.startsWith("haniya") ||
-    (type === "message_reply" && messageReply && messageReply.senderID === botID)
-  ) {
-    const msg = text.startsWith("haniya") ? body.slice(6).trim() : body;
-    return chatWithHaniya(api, event, msg || "hi");
-  }
-};
+const HISTORY_FILE = path.join(__dirname, "temporary", "juhi_mirai_history.json");
+const HISTORY_LIMIT = 10;
+const MODEL_NAME = "llama-3.3-70b-versatile"; 
 
-// ================= MAIN =================
-async function chatWithHaniya(api, event, query) {
-  const { threadID, messageID, senderID } = event;
-  const isOwner = senderID == OWNER_UID;
-  const q = query.toLowerCase();
+// --- CHARACTER PROMPT (Sweet + Roast) ---
+const SYSTEM_PROMPT = `Tumhara naam Haniya hai (log tumhe Soni bhi bulate hain).
+Tum ek naughty, sweet aur flirty girlfriend ki tarah baat karti ho.
+Tum Hinglish language use karti ho.
+Waise tum bohot sweet ho, lekin agar koi faaltu mazak kare ya batameezi kare, toh tum uski funny tareeke se tagdi bezzati (roast) kar deti ho.
+Tumhe lambe answers pasand nahi, hamesha 1-2 line mein chota aur chatpata jawab dena.
+Agar koi pyaar dikhaye toh pyaar, agar koi pange le toh savage ban jana.`;
 
-  // ================= NICKNAME =================
-  const userData = memory.users[senderID] || {};
-  const nickname = userData.nickname || (isOwner ? "Jaan" : "Tum");
+// --- HELPER FUNCTIONS ---
+function ensureHistoryFile() {
+  const dir = path.dirname(HISTORY_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(HISTORY_FILE)) fs.writeFileSync(HISTORY_FILE, JSON.stringify({}), 'utf8');
+}
 
-  // ================= SET NAME =================
-  if (q.startsWith("setname")) {
-    const name = query.split(" ").slice(1).join(" ");
-    if (!name) return api.sendMessage("Apna naam toh batao 😏", threadID);
+function readHistory() {
+  ensureHistoryFile();
+  try { return JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8')); } catch { return {}; }
+}
 
-    if (!memory.users[senderID]) memory.users[senderID] = {};
-    memory.users[senderID].nickname = name;
-    saveMemory();
+function writeHistory(data) {
+  try { fs.writeFileSync(HISTORY_FILE, JSON.stringify(data, null, 2), 'utf8'); } catch (err) {}
+}
 
-    return api.sendMessage(`Done 😘 ab tum "${name}" ho mere liye 💖`, threadID);
-  }
+function getUserHistory(userID) {
+  const allHistory = readHistory();
+  return Array.isArray(allHistory[userID]) ? allHistory[userID] : [];
+}
 
-  // ================= OWNER QUESTION =================
-  if (q.includes("owner")) {
-    return api.sendMessage(
-      isOwner
-        ? `Awww ${nickname} 😘 tum hi mere Owner ho ${OWNER_NAME} ❤️`
-        : `Sun lo 😏 mera Owner sirf ${OWNER_NAME} hai 👑`,
-      threadID
-    );
+function saveUserHistory(userID, newHistory) {
+  const allHistory = readHistory();
+  allHistory[userID] = newHistory.slice(-HISTORY_LIMIT);
+  writeHistory(allHistory);
+}
+
+// --- API FUNCTION ---
+async function getGroqReply(userID, prompt) {
+  // Check if user forgot to add key
+  if (GROQ_API_KEY.includes("𝐀𝐃𝐃 𝐘𝐎𝐔𝐑")) {
+    throw new Error("❌ API Key Missing! File mein jakar API Key add karo.");
   }
 
-  // ================= OWNER INFO =================
-  if (q.includes("owner info")) {
-    return api.sendMessage(
-`👑 OWNER INFO 👑
-Name: ${OWNER_NAME}
-UID: ${OWNER_UID}
-Status: Only mine ❤️`,
-      threadID
-    );
-  }
+  const history = getUserHistory(userID);
+  const messages = [{ role: "system", content: SYSTEM_PROMPT }, ...history, { role: "user", content: prompt }];
 
-  // ================= DOUBLE ROAST =================
-  if (!isOwner && q.includes(OWNER_NAME.toLowerCase())) {
-    return api.sendMessage(
-      `Zubaan sambhal 😏 ${OWNER_NAME} ke baare mein ek lafz bhi bola na 🔥`,
-      threadID
-    );
-  }
-
-  // ================= JEALOUS MODE =================
-  if (isOwner) {
-    if (!jealousTracker[threadID]) jealousTracker[threadID] = 0;
-
-    if (!q.includes("haniya")) {
-      jealousTracker[threadID]++;
-
-      if (jealousTracker[threadID] >= 3) {
-        jealousTracker[threadID] = 0;
-
-        return api.sendMessage(
-          `${nickname} 😒 tum dusron se baat kar rahe ho… mujhe ignore kar diya?`,
-          threadID
-        );
-      }
-    } else {
-      jealousTracker[threadID] = 0;
-    }
-  }
-
-  // ================= PROMPT =================
-  let dynamicPrompt = SYSTEM_PROMPT;
-
-  if (isOwner) {
-    dynamicPrompt += "\nOwner se pyaar se baat karo ❤️";
-  } else {
-    dynamicPrompt += "\nUser se thoda attitude 😏";
-  }
-
-  if (ABUSE_KEYWORDS.some(w => q.includes(w))) {
-    dynamicPrompt += "\nUser ne badtameezi ki hai → savage reply 🔥";
-  }
-
-  // ================= API =================
   try {
-    const res = await axios.get(
-      `https://api.kraza.qzz.io/ai/customai?q=${encodeURIComponent(query)}&systemPrompt=${encodeURIComponent(dynamicPrompt)}`,
-      { timeout: 15000 }
-    );
+    const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
+      model: MODEL_NAME,
+      messages: messages,
+      temperature: 0.8,
+      max_tokens: 200,
+      top_p: 1,
+      stream: false
+    }, { headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" } });
 
-    if (res.data && res.data.response) {
-      let reply = `${nickname}... ${res.data.response}`;
+    const botReply = response.data.choices[0].message.content;
+    saveUserHistory(userID, [...history, { role: "user", content: prompt }, { role: "assistant", content: botReply }]);
+    return botReply;
 
-      // Auto flirting
-      const chance = isOwner ? 0.8 : 0.3;
-      if (Math.random() < chance) {
-        reply += "\n\n" + getFlirtyLine(isOwner);
-      }
+  } catch (error) {
+    const msg = error.response ? error.response.data.error.message : error.message;
+    throw new Error(msg);
+  }
+}
 
-      return api.sendMessage(reply, threadID, messageID);
+// --- MAIN RUN COMMAND ---
+module.exports.run = async function({ api, event, args }) {
+    const { threadID, messageID, senderID } = event;
+    const prompt = args.join(" ").trim();
+
+    if (!prompt) return api.sendMessage("Bolo baby? Kuch kahoge ya bas dekhoge? 😘", threadID, messageID);
+
+    api.setMessageReaction("💋", messageID, () => {}, true);
+
+    try {
+        const reply = await getGroqReply(senderID, prompt);
+        
+        return api.sendMessage(reply, threadID, (err, info) => {
+            if (err) return;
+            
+            // Register Reply Handler
+            global.client.handleReply.push({
+                name: this.config.name,
+                messageID: info.messageID,
+                author: senderID
+            });
+        }, messageID);
+
+    } catch (error) {
+        api.sendMessage(`❌ Error: ${error.message}`, threadID, messageID);
     }
+};
 
-  } catch (err) {
-    console.error(err.message);
-    return api.sendMessage("Tum yaad aa rahe ho... 🥺", threadID);
-  }
-  }
+// --- HANDLE REPLY (CONTINUOUS CHAT) ---
+module.exports.handleReply = async function({ api, event, handleReply }) {
+    const { threadID, messageID, senderID, body } = event;
+    
+    // Check if the replier is the same person who started the chat
+    if (senderID !== handleReply.author) return;
+
+    const prompt = body.trim();
+    if (!prompt) return;
+
+    api.setMessageReaction("🔥", messageID, () => {}, true);
+
+    try {
+        const reply = await getGroqReply(senderID, prompt);
+        
+        return api.sendMessage(reply, threadID, (err, info) => {
+            if (err) return;
+
+            // Loop: Register new message for reply again
+            global.client.handleReply.push({
+                name: this.config.name,
+                messageID: info.messageID,
+                author: senderID
+            });
+        }, messageID);
+
+    } catch (error) {
+        api.sendMessage(`❌ Error: ${error.message}`, threadID, messageID);
+    }
+};
