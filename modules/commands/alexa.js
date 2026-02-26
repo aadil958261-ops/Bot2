@@ -2,16 +2,13 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 
-// ================= OWNER UID =================
+// ================= OWNER INFO =================
 const OWNER_UID = "100003615741592";
-
-// ================= BOT UID =================
+const OWNER_NAME = "Attaullah";
 const BOT_UID = "61586016755061";
 
-// ================= MEMORY FILE =================
-const memoryPath = path.join(__dirname, "haniya_memory.json");
-
 // ================= MEMORY =================
+const memoryPath = path.join(__dirname, "haniya_memory.json");
 let memory = {};
 
 if (fs.existsSync(memoryPath)) {
@@ -22,103 +19,183 @@ if (fs.existsSync(memoryPath)) {
   }
 }
 
+if (!memory.users) memory.users = {};
+memory.owner = OWNER_NAME;
+
 function saveMemory() {
   fs.writeFileSync(memoryPath, JSON.stringify(memory, null, 2));
 }
 
-// ================= ROAST WORDS =================
-const ABUSE_KEYWORDS = ["local", "gandu", " lody", "bewakoof", "chutiya", "bc", "mc", "tmkc"];
+// ================= EXTRA SYSTEMS =================
+const ABUSE_KEYWORDS = ["local","idiot","bewakoof","chutiya","gadha","ullu","haram","bsdk"];
 
-// =====================================================
-// --- CHARACTER PROMPT (Sweet + Roast) ---
-// =====================================================
-const SYSTEM_PROMPT = `Tumhara naam Haniya hai (log tumhe Soni bhi bulate hain).
-Tum ek naughty, sweet aur flirty girlfriend ki tarah baat karti ho.
-Tum Hinglish language use karti ho.
-Waise tum bohot sweet ho, lekin agar koi faaltu mazak kare ya batameezi kare, toh tum uski funny tareeke se tagdi bezzati (roast) kar deti ho.
-Tumhe lambe answers pasand nahi, hamesha 1-2 line mein chota aur chatpata jawab dena.
-Agar koi pyaar dikhaye toh pyaar, agar koi pange le toh savage ban jana.`;
+const FLIRTY_LINES = [
+  "Tum na… ajeeb ho 😏 itne cute kyun ho?",
+  "Sach batao… mujhe miss kar rahe the na? ❤️",
+  "Tumhari vibes hi alag hain 💕",
+  "Main thodi possessive hoon… tum sirf mere ho 😏",
+  "Tumhari baatein addictive hain 💋"
+];
+
+function getFlirtyLine(isOwner) {
+  const line = FLIRTY_LINES[Math.floor(Math.random() * FLIRTY_LINES.length)];
+  return isOwner ? line + " 😘" : "Zyada close mat aao… lekin interesting ho 😏";
+}
+
+// Jealous tracker
+const jealousTracker = {};
+
+// ================= PROMPT =================
+const SYSTEM_PROMPT = `Tumhara naam Haniya hai.
+Tum ek romantic, naughty aur loyal girlfriend ho.
+
+Owner ${OWNER_NAME} hai ❤️
+Owner ke liye soft + romantic
+Dusron ke liye savage 😏
+Short Hinglish replies do
+`;
 
 // ================= CONFIG =================
 module.exports.config = {
   name: "haniya",
-  version: "7.1.0",
+  version: "11.0.0",
   hasPermssion: 0,
   credits: "Attaullah + ChatGPT",
-  description: "Haniya Sweet + Savage AI",
+  description: "Ultimate GF AI",
   commandCategory: "AI",
-  usages: "haniya [message]",
+  usages: "haniya [msg]",
   cooldowns: 2
 };
 
-// ================= COMMAND =================
+// ================= RUN =================
 module.exports.run = async function ({ api, event, args }) {
-  const content = args.join(" ");
-  if (!content)
-    return api.sendMessage("Kuch toh bolo na 😏", event.threadID, event.messageID);
-
-  return chatWithHaniya(api, event, content);
+  const msg = args.join(" ");
+  if (!msg) return api.sendMessage("Kahan ho jaan? ❤️", event.threadID);
+  return chatWithHaniya(api, event, msg);
 };
 
-// ================= AUTO REPLY =================
+// ================= HANDLE =================
 module.exports.handleEvent = async function ({ api, event }) {
-  const { body, type, messageReply } = event;
-  if (!body) return;
+  const { body, senderID, messageReply, type } = event;
+  if (!body || senderID === api.getCurrentUserID()) return;
 
   const botID = api.getCurrentUserID ? api.getCurrentUserID() : BOT_UID;
-  const bodyLower = body.toLowerCase();
+  const text = body.toLowerCase();
 
   if (
-    bodyLower.startsWith("haniya ") ||
+    text.startsWith("haniya") ||
     (type === "message_reply" && messageReply && messageReply.senderID === botID)
   ) {
-    const query = bodyLower.startsWith("haniya ")
-      ? body.slice(7)
-      : body;
-
-    return chatWithHaniya(api, event, query);
+    const msg = text.startsWith("haniya") ? body.slice(6).trim() : body;
+    return chatWithHaniya(api, event, msg || "hi");
   }
 };
 
-// ================= MAIN FUNCTION =================
+// ================= MAIN =================
 async function chatWithHaniya(api, event, query) {
   const { threadID, messageID, senderID } = event;
+  const isOwner = senderID == OWNER_UID;
+  const q = query.toLowerCase();
 
-  if (!memory[senderID]) {
-    memory[senderID] = { lastMessage: "" };
+  // ================= NICKNAME =================
+  const userData = memory.users[senderID] || {};
+  const nickname = userData.nickname || (isOwner ? "Jaan" : "Tum");
+
+  // ================= SET NAME =================
+  if (q.startsWith("setname")) {
+    const name = query.split(" ").slice(1).join(" ");
+    if (!name) return api.sendMessage("Apna naam toh batao 😏", threadID);
+
+    if (!memory.users[senderID]) memory.users[senderID] = {};
+    memory.users[senderID].nickname = name;
+    saveMemory();
+
+    return api.sendMessage(`Done 😘 ab tum "${name}" ho mere liye 💖`, threadID);
   }
 
-  memory[senderID].lastMessage = query;
-  saveMemory();
-
-  let finalPrompt = SYSTEM_PROMPT;
-
-  if (ABUSE_KEYWORDS.some(word => query.toLowerCase().includes(word))) {
-    finalPrompt += "\nUser ne batameezi ki hai → savage roast karo 😏";
+  // ================= OWNER QUESTION =================
+  if (q.includes("owner")) {
+    return api.sendMessage(
+      isOwner
+        ? `Awww ${nickname} 😘 tum hi mere Owner ho ${OWNER_NAME} ❤️`
+        : `Sun lo 😏 mera Owner sirf ${OWNER_NAME} hai 👑`,
+      threadID
+    );
   }
 
-  if (query.toLowerCase().includes("love") || query.toLowerCase().includes("pyar")) {
-    finalPrompt += "\nUser pyaar dikha raha hai → sweet aur cute ban jao ❤️";
+  // ================= OWNER INFO =================
+  if (q.includes("owner info")) {
+    return api.sendMessage(
+`👑 OWNER INFO 👑
+Name: ${OWNER_NAME}
+UID: ${OWNER_UID}
+Status: Only mine ❤️`,
+      threadID
+    );
   }
 
+  // ================= DOUBLE ROAST =================
+  if (!isOwner && q.includes(OWNER_NAME.toLowerCase())) {
+    return api.sendMessage(
+      `Zubaan sambhal 😏 ${OWNER_NAME} ke baare mein ek lafz bhi bola na 🔥`,
+      threadID
+    );
+  }
+
+  // ================= JEALOUS MODE =================
+  if (isOwner) {
+    if (!jealousTracker[threadID]) jealousTracker[threadID] = 0;
+
+    if (!q.includes("haniya")) {
+      jealousTracker[threadID]++;
+
+      if (jealousTracker[threadID] >= 3) {
+        jealousTracker[threadID] = 0;
+
+        return api.sendMessage(
+          `${nickname} 😒 tum dusron se baat kar rahe ho… mujhe ignore kar diya?`,
+          threadID
+        );
+      }
+    } else {
+      jealousTracker[threadID] = 0;
+    }
+  }
+
+  // ================= PROMPT =================
+  let dynamicPrompt = SYSTEM_PROMPT;
+
+  if (isOwner) {
+    dynamicPrompt += "\nOwner se pyaar se baat karo ❤️";
+  } else {
+    dynamicPrompt += "\nUser se thoda attitude 😏";
+  }
+
+  if (ABUSE_KEYWORDS.some(w => q.includes(w))) {
+    dynamicPrompt += "\nUser ne badtameezi ki hai → savage reply 🔥";
+  }
+
+  // ================= API =================
   try {
     const res = await axios.get(
-      `https://api.kraza.qzz.io/ai/customai?q=${encodeURIComponent(query)}&systemPrompt=${encodeURIComponent(finalPrompt)}`,
+      `https://api.kraza.qzz.io/ai/customai?q=${encodeURIComponent(query)}&systemPrompt=${encodeURIComponent(dynamicPrompt)}`,
       { timeout: 15000 }
     );
 
-    if (res.data.status && res.data.response) {
-      let reply = res.data.response;
+    if (res.data && res.data.response) {
+      let reply = `${nickname}... ${res.data.response}`;
 
-      if (reply.length > 200) {
-        reply = reply.substring(0, 200);
+      // Auto flirting
+      const chance = isOwner ? 0.8 : 0.3;
+      if (Math.random() < chance) {
+        reply += "\n\n" + getFlirtyLine(isOwner);
       }
 
       return api.sendMessage(reply, threadID, messageID);
     }
 
   } catch (err) {
-    console.error("Haniya Error:", err.message);
-    return api.sendMessage("Main thodi busy hoon, baad mein aana 😌", threadID, messageID);
+    console.error(err.message);
+    return api.sendMessage("Tum yaad aa rahe ho... 🥺", threadID);
   }
-}
+  }
