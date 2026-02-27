@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 // ================= OWNER & BESTIE UID =================
-const OWNER_UID = "100003615741592";   // 👑 Owner UID (Attaullah)
+const OWNER_UID = "61587133637084";   // 👑 Owner UID (Attaullah)
 const BESTIE_UID = "61556680576161"; // 💖 Bestie UID (Yahan apna bestie UID daalo)
 
 module.exports.config = {
