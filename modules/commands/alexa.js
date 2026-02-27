@@ -46,7 +46,7 @@ module.exports.run = async function ({ api, event, args }) {
 // ================= MAIN FUNCTION =================
 async function chatWithSana(api, event, query) {
   // ✅ USE ENV VAR OR DIRECT API KEY (trim spaces)
-  const apiKey = (process.env.GROQ_API_KEY || "YOUR_API_KEY_HERE").trim();
+  const apiKey = (process.env.GROQ_API_KEY || "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").trim();
   const senderID = String(event.senderID);
 
   api.setMessageReaction("⌛", event.messageID, () => {}, true);
