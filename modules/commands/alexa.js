@@ -2,15 +2,15 @@ const axios = require("axios");
 
 // ================= OWNER SETTINGS =================
 const OWNER_UID = "100003615741592";   // 👑 Real Owner UID
-const OWNER_NAME = "attaullah";      // 👑 Owner name (lowercase)
+const OWNER_NAME = "attaullah";        // 👑 Owner name (lowercase)
 
 // ================= CONFIG =================
 module.exports.config = {
   name: "sana",
-  version: "13.0.0",
+  version: "14.0.0",
   hasPermssion: 0,
   credits: "Atta + ChatGPT",
-  description: "Sana AI Ultra GF Loyalty System",
+  description: "Sana AI Ultra GF Loyalty System v14",
   commandCategory: "AI",
   usages: "sana [text]",
   cooldowns: 2
@@ -45,7 +45,8 @@ module.exports.run = async function ({ api, event, args }) {
 
 // ================= MAIN FUNCTION =================
 async function chatWithSana(api, event, query) {
-  const apiKey = "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";
+  // ✅ USE ENV VAR OR DIRECT API KEY (trim spaces)
+  const apiKey = (process.env.GROQ_API_KEY || "YOUR_API_KEY_HERE").trim();
   const senderID = String(event.senderID);
 
   api.setMessageReaction("⌛", event.messageID, () => {}, true);
@@ -54,19 +55,14 @@ async function chatWithSana(api, event, query) {
   let senderName = "";
   try {
     const info = await api.getUserInfo(senderID);
-    senderName = info[senderID].name.toLowerCase();
+    senderName = info[senderID]?.name?.toLowerCase() || "";
   } catch (e) {
     console.log("Name fetch error:", e.message);
   }
 
   // ================= OWNER CHECK =================
-  let isOwner = false;
-
-  if (senderID === String(OWNER_UID)) {
-    isOwner = true;
-  } else if (senderName.includes(OWNER_NAME)) {
-    isOwner = true;
-  }
+  const lowerQuery = query.toLowerCase();
+  const isOwner = senderID === String(OWNER_UID) || senderName === OWNER_NAME;
 
   // ================= ROLE SYSTEM =================
   let roleText = "";
@@ -90,48 +86,26 @@ Tum is se sabse zyada pyar karti ho.
 Romantic, loyal aur thodi possessive ho.
 `;
 
-    const lower = query.toLowerCase();
-
-    if (
-      lower.includes("girl") ||
-      lower.includes("larki") ||
-      lower.includes("bandi") ||
-      lower.includes("friend")
-    ) {
+    if (lowerQuery.match(/girl|larki|bandi|friend/)) {
       moodLine = `
 Tum jealous ho jao 😒
 bolo: "Jaan tum sirf mere ho samjhay?"
 Cute possessive tone me.
 `;
     }
-
   } else {
     roleText = "Yeh koi normal user hai. Is se tum cute friendly style mein baat karti ho.";
   }
 
   // ================= SMART DETECTION =================
-  const lower = query.toLowerCase();
   let extraInstruction = "";
 
-  // 🔍 OWNER QUESTION
-  if (
-    lower.includes("owner kon") ||
-    lower.includes("creator kon") ||
-    lower.includes("tum kis ki ho")
-  ) {
-    extraInstruction = "User owner ke bare me pooch raha hai. Batao: Mera owner Attaullah Sindhi hai 💖";
+  if (lowerQuery.includes("owner kon") || lowerQuery.includes("creator kon") || lowerQuery.includes("tum kis ki ho")) {
+    extraInstruction += "User owner ke bare me pooch raha hai. Batao: Mera owner Attaullah Sindhi hai 💖";
   }
 
-  // 😏 FLIRT DETECT
-  if (
-    lower.includes("i love you") ||
-    lower.includes("love u") ||
-    lower.includes("marry") ||
-    lower.includes("kiss") ||
-    lower.includes("gf") ||
-    lower.includes("bf")
-  ) {
-    extraInstruction = "User flirt kar raha hai. Usay reject karo aur bolo tum sirf Attaullah ki ho.";
+  if (lowerQuery.match(/i love you|love u|marry|kiss|gf|bf/)) {
+    extraInstruction += " User flirt kar raha hai. Usay reject karo aur bolo tum sirf Attaullah ki ho.";
   }
 
   // ================= SYSTEM PROMPT =================
@@ -163,29 +137,32 @@ Style:
     const res = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
       {
-        model: "llama-3.3-70b-versatile",
+        model: "llama3-70b-8192",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "system", content: extraInstruction },
           { role: "user", content: query }
-        ]
+        ],
+        temperature: 0.8
       },
       {
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json"
-        }
+        },
+        timeout: 20000 // 20 sec
       }
     );
 
-    const reply = res.data.choices[0].message.content;
+    const reply = res.data?.choices?.[0]?.message?.content || "😶 Sana confused ho gayi...";
 
     api.setMessageReaction("✅", event.messageID, () => {}, true);
     return api.sendMessage(reply, event.threadID, event.messageID);
 
   } catch (error) {
-    console.error("API ERROR:", error.response?.data || error.message);
+    console.error("API ERROR STATUS:", error.response?.status);
+    console.error("API ERROR DATA:", JSON.stringify(error.response?.data, null, 2));
     api.setMessageReaction("❌", event.messageID, () => {}, true);
     return api.sendMessage("❌ API error aagaya Attaullah 😒", event.threadID, event.messageID);
   }
-}
+    }
