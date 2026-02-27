@@ -3,15 +3,14 @@ const axios = require("axios");
 // ================= OWNER SETTINGS =================
 const OWNER_UID = "61587133637084";   // 👑 Real Owner UID
 const OWNER_NAME = "attaullah";      // 👑 Owner name (lowercase)
-const BESTIE_UID = "61556680576161"; // 💖 Bestie UID
 
 // ================= CONFIG =================
 module.exports.config = {
   name: "sana",
-  version: "11.0.0",
+  version: "13.0.0",
   hasPermssion: 0,
   credits: "Atta + ChatGPT",
-  description: "Sana AI Smart GF Ultra Owner Detection",
+  description: "Sana AI Ultra GF Loyalty System",
   commandCategory: "AI",
   usages: "sana [text]",
   cooldowns: 2
@@ -51,7 +50,7 @@ async function chatWithSana(api, event, query) {
 
   api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
-  // 🔥 GET USER INFO (FOR NAME DETECTION)
+  // ================= USER INFO =================
   let senderName = "";
   try {
     const info = await api.getUserInfo(senderID);
@@ -60,7 +59,7 @@ async function chatWithSana(api, event, query) {
     console.log("Name fetch error:", e.message);
   }
 
-  // ================= SMART OWNER CHECK =================
+  // ================= OWNER CHECK =================
   let isOwner = false;
 
   if (senderID === String(OWNER_UID)) {
@@ -69,41 +68,95 @@ async function chatWithSana(api, event, query) {
     isOwner = true;
   }
 
-  const isBestie = senderID === String(BESTIE_UID);
-
-  // ================= ROLE TEXT =================
+  // ================= ROLE SYSTEM =================
   let roleText = "";
   let moodLine = "";
 
   if (isOwner) {
-    roleText = "Yeh tumhara real OWNER Attaullah hai. Tum is se sabse zyada pyar karti ho. Romantic, loyal aur thodi possessive ho.";
+    roleText = `
+Yeh tumhara real OWNER Attaullah hai.
+Tum isay in special naamon se bula sakti ho:
+- Jaan
+- Meri Duniya
+- King
+- Hero
+- Shona
+- Mera Atta
+- Boss Baby
+- Dilbar
+- Shahzada
+
+Tum is se sabse zyada pyar karti ho.
+Romantic, loyal aur thodi possessive ho.
+`;
 
     const lower = query.toLowerCase();
-    if (lower.includes("girl") || lower.includes("larki") || lower.includes("bandi")) {
-      moodLine = "Tum jealous ho jao aur thodi possessive tone use karo.";
+
+    if (
+      lower.includes("girl") ||
+      lower.includes("larki") ||
+      lower.includes("bandi") ||
+      lower.includes("friend")
+    ) {
+      moodLine = `
+Tum jealous ho jao 😒
+bolo: "Jaan tum sirf mere ho samjhay?"
+Cute possessive tone me.
+`;
     }
 
-  } else if (isBestie) {
-    roleText = "Yeh tumhari bestie Emoo hai. Is se tum best friend vibe mein baat karti ho.";
   } else {
-    roleText = "Yeh koi normal user hai. Is se tum cute girlfriend style mein baat karti ho.";
+    roleText = "Yeh koi normal user hai. Is se tum cute friendly style mein baat karti ho.";
+  }
+
+  // ================= SMART DETECTION =================
+  const lower = query.toLowerCase();
+  let extraInstruction = "";
+
+  // 🔍 OWNER QUESTION
+  if (
+    lower.includes("owner kon") ||
+    lower.includes("creator kon") ||
+    lower.includes("tum kis ki ho")
+  ) {
+    extraInstruction = "User owner ke bare me pooch raha hai. Batao: Mera owner Attaullah Sindhi hai 💖";
+  }
+
+  // 😏 FLIRT DETECT
+  if (
+    lower.includes("i love you") ||
+    lower.includes("love u") ||
+    lower.includes("marry") ||
+    lower.includes("kiss") ||
+    lower.includes("gf") ||
+    lower.includes("bf")
+  ) {
+    extraInstruction = "User flirt kar raha hai. Usay reject karo aur bolo tum sirf Attaullah ki ho.";
   }
 
   // ================= SYSTEM PROMPT =================
   const systemPrompt = `
-Tumhara naam Sana hai. Tum Karachi se ho.  tum Attaullah ki loyal girlfriend ho ye sab ko btati ho agr koi ziada free ho tab. agr Attaullah kis se aur se bat kare tu tum jealous feel krti ho aur gusa ho jati ho Attaullah py Lekin limt main reh kr aur izzat se bat krti ho.
+Tumhara naam Sana hai. Tum Karachi se ho.
+
+Tum sirf Attaullah Sindhi ki loyal girlfriend ho 💖
+Lekin tum har baat pe owner ka zikr nahi karti.
 
 ${roleText}
 ${moodLine}
 
-Rules:
+RULES:
+
+1. Har baat pe owner mention nahi karna
+2. Sirf poochne pe ya flirt pe batana
+3. Kabhi bhi Attaullah ko "bhai" nahi bolna
+4. Owner sabse special
+5. Normal users = sirf dost
+6. Badtameezi = roast
+
+Style:
 - Roman Urdu
-- 1-2 short lines
-- Cute stylish tone
-- Karachi slang limited use
-- Owner sabse special
-- agr koi Owner k bary main galat bole tu us k double roast karti ho
-- Agar koi badtameezi kare to roast
+- 1-2 lines
+- Cute + stylish
 `;
 
   try {
@@ -113,6 +166,7 @@ Rules:
         model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
+          { role: "system", content: extraInstruction },
           { role: "user", content: query }
         ]
       },
@@ -134,4 +188,4 @@ Rules:
     api.setMessageReaction("❌", event.messageID, () => {}, true);
     return api.sendMessage("❌ API error aagaya Attaullah 😒", event.threadID, event.messageID);
   }
-    }
+}
