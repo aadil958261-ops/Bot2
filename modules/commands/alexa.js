@@ -46,7 +46,7 @@ module.exports.run = async function ({ api, event, args }) {
 
 // ================= MAIN FUNCTION =================
 async function chatWithSana(api, event, query) {
-  const apiKey = "YOUR_API_KEY_HERE";
+  const apiKey = "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";
   const senderID = String(event.senderID);
 
   api.setMessageReaction("⌛", event.messageID, () => {}, true);
