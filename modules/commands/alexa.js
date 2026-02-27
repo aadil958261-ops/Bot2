@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 // ================= OWNER SETTINGS =================
-const OWNER_UID = "61587133637084";   // 👑 Real Owner UID
+const OWNER_UID = "100003615741592";   // 👑 Real Owner UID
 const OWNER_NAME = "attaullah";      // 👑 Owner name (lowercase)
 
 // ================= CONFIG =================
@@ -45,7 +45,7 @@ module.exports.run = async function ({ api, event, args }) {
 
 // ================= MAIN FUNCTION =================
 async function chatWithSana(api, event, query) {
-  const apiKey = "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";
+  const apiKey = "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";
   const senderID = String(event.senderID);
 
   api.setMessageReaction("⌛", event.messageID, () => {}, true);
