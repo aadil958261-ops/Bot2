@@ -39,7 +39,7 @@ module.exports.run = async function ({ api, event, args }) {
 };
 
 async function chatWithSana(api, event, query) {
-  const apiKey = "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";
+  const apiKey = "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";
   
   api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
