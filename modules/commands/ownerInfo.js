@@ -18,7 +18,7 @@ https://www.facebook.com/attaullah.janu6
 `;
 
 module.exports.config = {
-  name: "ownerinfo",
+  name: "owner",
   version: "1.0.0",
   hasPermssion: 0, // 0 = all users
   description: "Sends owner info when someone types 'Owner' in the group",
@@ -37,4 +37,5 @@ module.exports.run = async ({ api, event }) => {
   } catch (err) {
     console.error("Error sending owner info:", err);
   }
+
 };
