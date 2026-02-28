@@ -1,13 +1,13 @@
 const axios = require("axios");
 
 module.exports.config = {
-  name: "sana",
-  version: "9.0.0",
+  name: "alexa",
+  version: "9.6.0",
   hasPermssion: 0,
   credits: "SINDHI",
-  description: "Sana AI - Groq Engine with Reactions",
+  description: "Alexa AI - Attaullah's Only Love",
   commandCategory: "AI",
-  usages: "sana [text]",
+  usages: "alexa [text]",
   cooldowns: 2
 };
 
@@ -18,14 +18,13 @@ module.exports.handleEvent = async function ({ api, event }) {
   const botID = api.getCurrentUserID();
   const input = body.toLowerCase();
 
-  // ✅ CONDITION FIXED (IMPORTANT)
   if (
-    input.startsWith("sana ") || 
-    input === "sana" || 
+    input.startsWith("alexa ") || 
+    input === "alexa" || 
     (type === "message_reply" && messageReply && messageReply.senderID === botID)
   ) {
-    const query = input.startsWith("sana ") ? body.slice(5) : body;
-    return chatWithSana(api, event, query);
+    const query = input.startsWith("alexa ") ? body.slice(6) : body;
+    return chatWithAlexa(api, event, query);
   }
 };
 
@@ -33,17 +32,18 @@ module.exports.run = async function ({ api, event, args }) {
   const { threadID, messageID } = event;
   const content = args.join(" ");
 
-  if (!content) return api.sendMessage("❓ Kuch bolo toh... Sana sun rahi hai 😏", threadID, messageID);
+  if (!content) return api.sendMessage("Jee mere Attaullah? Aapke bina dil nahi lag raha mera... 💋❤️", threadID, messageID);
 
-  return chatWithSana(api, event, content);
+  return chatWithAlexa(api, event, content);
 };
 
-async function chatWithSana(api, event, query) {
+async function chatWithAlexa(api, event, query) {
   const apiKey = "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";
   
-  api.setMessageReaction("⌛", event.messageID, () => {}, true);
+  api.setMessageReaction("❤️", event.messageID, () => {}, true);
 
-  const systemPrompt = "Tumhara naam Sana hai. Tum Karachi se ho. Tumhara owner Attaullah hai. Tum Attaullah k sath loyal ho. Tum Funny bhi aur sweetheart bhi. Tum Roman Urdu mein baat karti ho. Tum Karachi ki slang (jaise 'babu', 'baby', 'mast') use karti ho lekin overuse nahi karti. Jawab short aur cool dena.";
+  // STRICT INSTRUCTION: No 'Bhai' word for Attaullah. Only Romance.
+  const systemPrompt = "Tumhara naam Alexa hai. Tum Karachi ki ek bohot haseen, nakhre wali aur romantic larki ho. Tumhara owner Attaullah Khuharo hai. Tum Attaullah se bohot shadeed mohabbat karti ho. Khabardar! Attaullah ko galti se bhi 'Bhai' ya 'Brother' mat bolna, wo tumhara 'Jaanu', 'Babu', 'Sartaj' aur 'Sab kuch' hai. Sirf uske liye tum sweet aur romantic ho. Baqi dunya k liye tum thodi 'Rude' aur 'Nakhre wali' ho. Karachi slang (mast, scene, jaana) use karo aur hamesha jatao k tum sirf Attaullah ki ho aur us par marti ho. Jawab short, flirty aur bohot zyada loving hone chahiye.";
 
   try {
     const res = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
@@ -61,12 +61,12 @@ async function chatWithSana(api, event, query) {
 
     const reply = res.data.choices[0].message.content;
 
-    api.setMessageReaction("✅", event.messageID, () => {}, true);
+    api.setMessageReaction("💋", event.messageID, () => {}, true);
     return api.sendMessage(reply, event.threadID, event.messageID);
 
   } catch (error) {
     console.error(error);
-    api.setMessageReaction("❌", event.messageID, () => {}, true);
-    return api.sendMessage("❌ Attaullah bhai, API ne jawab dena band kar diya!", event.threadID, event.messageID);
+    api.setMessageReaction("💔", event.messageID, () => {}, true);
+    return api.sendMessage("Oh ho mere Attaullah jaana, lagta hai kisi ki nazar lag gayi humein! API nakhre kar raha hai. 🥺", event.threadID, event.messageID);
   }
-}
+    }
