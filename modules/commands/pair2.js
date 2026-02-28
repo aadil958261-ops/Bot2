@@ -2,15 +2,16 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 const { Jimp } = require("jimp");
+const { chargeUser } = require("./_economy");
 
 module.exports.config = {
   name: "pair2",
   version: "1.0.0",
   hasPermssion: 0,
-  credits: "ATTAULLAH KING",
-  description: "Create a romantic pair edit with golden circles",
+  credits: "SARDAR RDX",
+  description: "Create a romantic pair edit with golden circles (random, mention, reply)",
   commandCategory: "Love",
-  usages: "[@mention optional]",
+  usages: "pair2 [@mention/reply]",
   cooldowns: 5,
 };
 
@@ -18,7 +19,7 @@ const cacheDir = path.join(__dirname, "cache", "canvas");
 const templateUrl = "https://i.ibb.co/Zptb9xJ2/803a8e8cc475.jpg";
 const templatePath = path.join(cacheDir, "pair2_template.png");
 
-const maleNames = ["ali", "ahmed", "muhammad", "hassan", "hussain", "kashif", "raza", "usman", "bilal", "hamza", "asad", "zain", "fahad", "faisal", "imran", "kamran", "adnan", "arslan", "waqas", "waseem", "irfan", "junaid", "khalid", "nadeem", "naveed", "omer", "qasim", "rizwan", "sajid", "salman", "shahid", "tariq", "umar", "yasir", "zahid"];
+const maleNames = ["ali", "ahmed", "muhammad", "hassan", "hussain", "kashif", "sardar", "usman", "bilal", "hamza", "asad", "zain", "fahad", "faisal", "imran", "kamran", "adnan", "arslan", "waqas", "waseem", "irfan", "junaid", "khalid", "nadeem", "naveed", "omer", "qasim", "rizwan", "sajid", "salman", "shahid", "tariq", "umar", "yasir", "zahid"];
 const femaleNames = ["fatima", "ayesha", "maria", "sana", "hira", "zara", "maryam", "khadija", "sara", "amina", "bushra", "farah", "iqra", "javeria", "kinza", "laiba", "maham", "nadia", "rabia", "saima", "tahira", "uzma", "zainab", "anam", "asma", "dua", "esha", "fiza", "huma", "iram"];
 
 const romanticMessages = [
@@ -70,113 +71,84 @@ async function makeCircularImage(buffer, size) {
 }
 
 function detectGender(name) {
-  const lowerName = name.toLowerCase();
+  const lowerName = name ? name.toLowerCase() : "";
   if (femaleNames.some(n => lowerName.includes(n))) return "female";
   if (maleNames.some(n => lowerName.includes(n))) return "male";
   return "unknown";
 }
 
-async function getThreadMembers(api, threadID) {
-  return new Promise((resolve) => {
-    api.getThreadInfo(threadID, (err, info) => {
-      if (err) return resolve([]);
-      resolve(info.participantIDs || []);
-    });
-  });
-}
-
-async function getUserInfo(api, uid) {
-  return new Promise((resolve) => {
-    api.getUserInfo(uid, (err, info) => {
-      if (err) return resolve({});
-      resolve(info[uid] || {});
-    });
-  });
-}
-
-function isValidName(name) {
-  if (!name || name.trim() === '') return false;
-  const lower = name.toLowerCase();
-  if (lower === 'facebook' || lower === 'facebook user' || lower.includes('facebook user')) return false;
-  if (lower === 'unknown' || lower === 'user') return false;
-  return true;
-}
-
-async function getProperName(api, uid, Users) {
-  if (Users && Users.getNameUser) {
-    return await Users.getNameUser(uid);
-  }
-  const info = await getUserInfo(api, uid);
-  if (isValidName(info.name)) return info.name;
-  if (isValidName(info.firstName)) return info.firstName;
-  if (isValidName(info.alternateName)) return info.alternateName;
-  return 'Jaan';
-}
-
-module.exports.run = async ({ api, event, Users }) => {
+module.exports.run = async ({ api, event, Users, Currencies, args }) => {
   const { threadID, messageID, senderID } = event;
-  const mention = Object.keys(event.mentions);
+  const botID = api.getCurrentUserID();
 
   try {
+    const COST = 10;
+    const charge = await chargeUser(Currencies, senderID, COST);
+    if (!charge.success) return api.sendMessage(`❌ Aapka balance low hy.\n💰 Price: ${COST} coins\n💵 Your Total: ${charge.total || 0}`, threadID, messageID);
+
     await downloadTemplate();
 
     let one = senderID;
     let two;
-    let senderInfo = await getUserInfo(api, senderID);
-    let senderGender = senderInfo.gender === 1 ? "female" : senderInfo.gender === 2 ? "male" : detectGender(senderInfo.name || "");
 
-    if (mention[0]) {
-      two = mention[0];
+    if (Object.keys(event.mentions).length > 0) {
+      two = Object.keys(event.mentions)[Object.keys(event.mentions).length - 1];
+    } else if (event.messageReply) {
+      two = event.messageReply.senderID;
+    } else if (args.join(" ").match(/\d+/g)) {
+      const uids = args.join(" ").match(/\d+/g);
+      two = uids[uids.length - 1];
     } else {
-      const members = await getThreadMembers(api, threadID);
-      const filteredMembers = members.filter(m => m !== senderID);
+      const threadInfo = await api.getThreadInfo(threadID);
+      const participantIDs = threadInfo.participantIDs;
+      
+      const infoOne = await api.getUserInfo(one);
+      const genderOne = infoOne[one].gender === 1 ? "female" : infoOne[one].gender === 2 ? "male" : detectGender(infoOne[one].name);
 
+      const filteredMembers = participantIDs.filter(m => m !== senderID && m !== botID);
       if (filteredMembers.length === 0) {
-        return api.sendMessage("≿━━━━༺❀༻━━━━≾\n❌ 𝐍𝐨 𝐦𝐞𝐦𝐛𝐞𝐫𝐬 𝐟𝐨𝐮𝐧𝐝 𝐭𝐨 𝐩𝐚𝐢𝐫!\n≿━━━━༺❀༻━━━━≾", threadID, messageID);
+        return api.sendMessage("❌ Group mein koi aur member nahi mila!", threadID, messageID);
       }
 
       let oppositeGenderMembers = [];
+      const batchInfo = await api.getUserInfo(filteredMembers);
+      
       for (const uid of filteredMembers) {
-        const info = await getUserInfo(api, uid);
-        const memberGender = info.gender === 1 ? "female" : info.gender === 2 ? "male" : detectGender(info.name || "");
+        const info = batchInfo[uid];
+        const memberGender = info.gender === 1 ? "female" : info.gender === 2 ? "male" : detectGender(info.name);
         
-        if (senderGender === "male" && memberGender === "female") {
+        if (genderOne === "male" && memberGender === "female") {
           oppositeGenderMembers.push(uid);
-        } else if (senderGender === "female" && memberGender === "male") {
+        } else if (genderOne === "female" && memberGender === "male") {
           oppositeGenderMembers.push(uid);
-        } else if (senderGender === "unknown" || memberGender === "unknown") {
+        } else if (genderOne === "unknown" || memberGender === "unknown") {
           oppositeGenderMembers.push(uid);
         }
       }
 
-      if (oppositeGenderMembers.length === 0) {
-        oppositeGenderMembers = filteredMembers;
-      }
-
+      if (oppositeGenderMembers.length === 0) oppositeGenderMembers = filteredMembers;
       two = oppositeGenderMembers[Math.floor(Math.random() * oppositeGenderMembers.length)];
     }
 
-    const avatarOne = await getAvatar(one);
-    const avatarTwo = await getAvatar(two);
+    if (two == one) return api.sendMessage("❌ Aap apne saath pairing nahi kar sakte!", threadID, messageID);
 
-    const circleOne = await makeCircularImage(avatarOne, 230);
-    const circleTwo = await makeCircularImage(avatarTwo, 230);
+    const [avatarOne, avatarTwo] = await Promise.all([getAvatar(one), getAvatar(two)]);
+    const [circleOne, circleTwo] = await Promise.all([makeCircularImage(avatarOne, 230), makeCircularImage(avatarTwo, 230)]);
 
     const template = await Jimp.read(templatePath);
-
     template.composite(circleOne, 10, 5);
     template.composite(circleTwo, 245, 5);
 
     const outputPath = path.join(cacheDir, `pair2_${one}_${two}_${Date.now()}.png`);
     await template.write(outputPath);
 
-    let nameOne = await getProperName(api, one, Users);
-    let nameTwo = await getProperName(api, two, Users);
+    let nameOne = await Users.getNameUser(one);
+    let nameTwo = await Users.getNameUser(two);
     const randomMsg = romanticMessages[Math.floor(Math.random() * romanticMessages.length)];
 
     api.sendMessage(
       {
-        body: `≿━━━━༺⭐༻━━━━≾\n\n${randomMsg}\n\n👤 ${nameOne}\n✨ 𝐏𝐀𝐈𝐑𝐄𝐃 𝐖𝐈𝐓𝐇 ✨\n👤 ${nameTwo}\n\n≿━━━━༺⭐༻━━━━≾`,
+        body: `≿━━━━༺⭐༻━━━━≾\n\n${randomMsg}\n\n👤 ${nameOne}\n✨ 𝐏𝐀𝐈𝐑𝐄𝐃 𝐖𝐈𝐓𝐇 ✨\n👤 ${nameTwo}\n\n≿━━━━༺⭐༻━━━━≾\n\n💰 Remaining Coins: ${charge.remaining} (You can use ${Math.floor(charge.remaining / COST)} more paid commands)`,
         attachment: fs.createReadStream(outputPath),
         mentions: [
           { tag: nameOne, id: one },
@@ -184,12 +156,14 @@ module.exports.run = async ({ api, event, Users }) => {
         ]
       },
       threadID,
-      () => fs.unlinkSync(outputPath),
+      () => {
+        if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+      },
       messageID
     );
 
   } catch (error) {
     console.error("Pair2 command error:", error);
-    api.sendMessage("≿━━━━༺❀༻━━━━≾\n❌ 𝐄𝐫𝐫𝐨𝐫 𝐜𝐫𝐞𝐚𝐭𝐢𝐧𝐠 𝐩𝐚𝐢𝐫!\n≿━━━━༺❀༻━━━━≾", threadID, messageID);
+    api.sendMessage("❌ Error: " + error.message, threadID, messageID);
   }
 };
