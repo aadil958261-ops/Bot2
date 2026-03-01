@@ -1,4 +1,5 @@
 // ownerInfo.js
+
 const OWNER_ID = "100003615741592"; // Owner UID
 const OWNER_NAME = "Attaullah";
 
@@ -18,29 +19,46 @@ const OWNER_INFO = `
 
 module.exports.config = {
   name: "owner",
-  version: "1.3.0",
-  hasPermssion: 0, // all users
-  description: "Auto replies with owner info whenever someone types 'owner' in chat",
+  version: "3.0.0",
+  hasPermssion: 0,
+  credits: "Attaullah + ChatGPT",
+  description: "Auto reply owner info (no prefix)",
   commandCategory: "info",
-  usages: "Just type 'owner' in chat",
+  usages: "owner",
   cooldowns: 2,
+  usePrefix: false
 };
 
 module.exports.handleEvent = async ({ api, event }) => {
   try {
-    const message = event.body || "";
+    if (!event.body) return;
 
-    // Agar message me "owner" word ho to auto send owner info
-    if (message.toLowerCase().includes("owner")) {
-      await api.sendMessage(
+    const senderID = event.senderID;
+    const botID = api.getCurrentUserID();
+
+    // Bot khud ko reply na kare
+    if (senderID == botID) return;
+
+    const msg = event.body.toLowerCase().trim();
+
+    // Agar message me "owner" word ho
+    if (msg.includes("owner")) {
+      return api.sendMessage(
         {
           body: OWNER_INFO,
-          mentions: [{ tag: OWNER_NAME, id: OWNER_ID }],
+          mentions: [
+            {
+              tag: OWNER_NAME,
+              id: OWNER_ID
+            }
+          ]
         },
-        event.threadID
+        event.threadID,
+        event.messageID
       );
     }
-  } catch (err) {
-    console.error("Error sending owner info:", err);
+
+  } catch (error) {
+    console.log("Owner Info Error:", error);
   }
 };
