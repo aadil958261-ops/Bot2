@@ -3,37 +3,38 @@ const axios = require("axios");
 // ================= CONFIG =================
 module.exports.config = {
   name: "alexa",
-  version: "10.0.0",
+  version: "11.0.0",
   hasPermssion: 0,
   credits: "SINDHI",
   description: "Alexa AI - Attaullah's Only Love",
   commandCategory: "AI",
   usages: "alexa [text]",
-  cooldowns: 2
+  cooldowns: 3
 };
 
 // ================= OWNER UID =================
-const OWNER_UID = "100003615741592"; // 👑 Apna UID yahan lagao
+const OWNER_UID = "100003615741592"; 
 
-// ================= AUTO REPLY =================
+// ================= AUTO REPLY LOGIC =================
 module.exports.handleEvent = async function ({ api, event }) {
-  const { body, type, messageReply } = event;
-  if (!body) return;
+  const { body, type, messageReply, threadID, messageID, senderID } = event;
+  if (!body || senderID == api.getCurrentUserID()) return;
 
-  const botID = api.getCurrentUserID();
   const input = body.toLowerCase();
 
+  // Trigger if starts with 'alexa' OR replying to bot's message
   if (
-    input.startsWith("alexa ") || 
-    input === "alexa" || 
-    (type === "message_reply" && messageReply && messageReply.senderID === botID)
+    input.startsWith("alexa") || 
+    (type === "message_reply" && messageReply && messageReply.senderID === api.getCurrentUserID())
   ) {
-    const query = input.startsWith("alexa ") ? body.slice(6) : body;
-    return chatWithAlexa(api, event, query);
+    const query = input.startsWith("alexa") ? body.replace(/alexa/i, "").trim() : body;
+    if (!query && input === "alexa") return api.sendMessage("Jee Jaan? Kuch bolo to sahi... 😘", threadID, messageID);
+    
+    return chatWithAlexa(api, event, query || "hi");
   }
 };
 
-// ================= COMMAND =================
+// ================= COMMAND RUN =================
 module.exports.run = async function ({ api, event, args }) {
   const { threadID, messageID } = event;
   const content = args.join(" ");
@@ -45,17 +46,17 @@ module.exports.run = async function ({ api, event, args }) {
 
 // ================= MAIN CHAT FUNCTION =================
 async function chatWithAlexa(api, event, query) {
-  const apiKey = "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"; // 🔑 Apni Groq API key yahan lagao
-
+  // 🔑 Groq API Key
+  const apiKey = "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"; 
   const isOwner = event.senderID === OWNER_UID;
 
-  // 🎭 Dynamic Personality
+  // 🎭 Personality Settings
   const systemPrompt = isOwner
-    ? "Tumhara naam Alexa hai. Tum Karachi ki romantic larki ho. Tum sirf Attaullah se mohabbat karti ho. Usay hamesha 'Janu', 'Jaan', 'baby', 'Jani' bulao. Kabhi 'Bhai' mat kehna. Jawab bohot short (1-2 line), flirty aur loving ho."
-    : "Tumhara naam Alexa hai. Tum thodi nakhre wali larki ho. Users ko 'Dost', 'Yar' ya 'Friend' bulao. Thodi attitude wali ho. Jawab short (1-2 line), simple aur thode rude/funny ho.";
+    ? "Tumhara naam Alexa hai. Tum Karachi ki romantic larki ho. Tum sirf Attaullah se mohabbat karti ho. Usay hamesha 'Janu', 'Jaan', 'baby', 'Jani' bulao. Kabhi 'Bhai' mat kehna. Jawab 2-3 lines mein thoda lamba aur bohot loving/flirty do."
+    : "Tumhara naam Alexa hai. Tum thodi nakhre wali aur attitude wali larki ho. Sabko 'Dost' ya 'Yar' bulao. Jawab 2-3 lines ka ho, magar thoda rude aur funny touch mein.";
 
   try {
-    api.setMessageReaction("❤️", event.messageID, () => {}, true);
+    api.setMessageReaction("⏳", event.messageID, () => {}, true);
 
     const res = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -64,7 +65,9 @@ async function chatWithAlexa(api, event, query) {
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: query }
-        ]
+        ],
+        max_tokens: 150, // Allows for 2-3 lines
+        temperature: 0.8
       },
       {
         headers: {
@@ -74,19 +77,19 @@ async function chatWithAlexa(api, event, query) {
       }
     );
 
-    let reply = res.data.choices[0].message.content;
+    const reply = res.data.choices[0].message.content;
 
-    // ✂️ Force short reply (optional safety)
-    if (reply.length > 120) {
-      reply = reply.slice(0, 120) + "...";
-    }
-
-    api.setMessageReaction("💋", event.messageID, () => {}, true);
+    api.setMessageReaction(isOwner ? "❤️" : "😼", event.messageID, () => {}, true);
     return api.sendMessage(reply, event.threadID, event.messageID);
 
   } catch (error) {
-    console.error(error);
-    api.setMessageReaction("💔", event.messageID, () => {}, true);
-    return api.sendMessage("Error aa gaya 😒 baad me try karo.", event.threadID, event.messageID);
+    console.error("Alexa Error:", error.response ? error.response.data : error.message);
+    api.setMessageReaction("⚠️", event.messageID, () => {}, true);
+    
+    // Custom error message for API limits
+    if (error.response && error.response.status === 429) {
+        return api.sendMessage("Oho, thoda sakoon karo! Bot bohot fast reply de raha hai, thodi der baad try karo. 🙄", event.threadID, event.messageID);
+    }
+    return api.sendMessage("Net ka masla hai ya API limit khatam, dobara koshish karo yar. 😒", event.threadID, event.messageID);
   }
-  }
+     }
