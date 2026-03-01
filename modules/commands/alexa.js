@@ -47,7 +47,7 @@ module.exports.run = async function ({ api, event, args }) {
 // ================= MAIN CHAT FUNCTION =================
 async function chatWithAlexa(api, event, query) {
   // 🔑 Groq API Key
-  const apiKey = "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"; 
+  const apiKey = "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"; 
   const isOwner = event.senderID === OWNER_UID;
 
   // 🎭 Personality Settings
