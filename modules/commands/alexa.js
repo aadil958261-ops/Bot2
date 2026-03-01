@@ -1,8 +1,9 @@
 const axios = require("axios");
 
+// ================= CONFIG =================
 module.exports.config = {
   name: "alexa",
-  version: "9.6.0",
+  version: "10.0.0",
   hasPermssion: 0,
   credits: "SINDHI",
   description: "Alexa AI - Attaullah's Only Love",
@@ -11,6 +12,10 @@ module.exports.config = {
   cooldowns: 2
 };
 
+// ================= OWNER UID =================
+const OWNER_UID = "100003615741592"; // 👑 Apna UID yahan lagao
+
+// ================= AUTO REPLY =================
 module.exports.handleEvent = async function ({ api, event }) {
   const { body, type, messageReply } = event;
   if (!body) return;
@@ -28,38 +33,53 @@ module.exports.handleEvent = async function ({ api, event }) {
   }
 };
 
+// ================= COMMAND =================
 module.exports.run = async function ({ api, event, args }) {
   const { threadID, messageID } = event;
   const content = args.join(" ");
 
-  if (!content) return api.sendMessage("Jee mere Attaullah? Aapke bina dil nahi lag raha mera... 💋❤️", threadID, messageID);
+  if (!content) return api.sendMessage("Kya hua? Kuch bolo na... 😏", threadID, messageID);
 
   return chatWithAlexa(api, event, content);
 };
 
+// ================= MAIN CHAT FUNCTION =================
 async function chatWithAlexa(api, event, query) {
-  const apiKey = "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";
-  
-  api.setMessageReaction("❤️", event.messageID, () => {}, true);
+  const apiKey = "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"; // 🔑 Apni Groq API key yahan lagao
 
-  // STRICT INSTRUCTION: No 'Bhai' word for Attaullah. Only Romance.
-  const systemPrompt = "Tumhara naam Alexa hai. Tum Karachi ki ek bohot haseen, nakhre wali aur romantic larki ho. Tumhara owner Attaullah Khuharo hai. Tum Attaullah se bohot shadeed mohabbat karti ho. Khabardar! Attaullah ko galti se bhi 'Bhai' ya 'Brother' mat bolna, wo tumhara 'Jaanu', 'Babu', 'Sartaj' aur 'Sab kuch' hai. Sirf uske liye tum sweet aur romantic ho. Baqi dunya k liye tum thodi 'Rude' aur 'Nakhre wali' ho. Karachi slang (mast, scene, jaana) use karo aur hamesha jatao k tum sirf Attaullah ki ho aur us par marti ho. Jawab short, flirty aur bohot zyada loving hone chahiye.";
+  const isOwner = event.senderID === OWNER_UID;
+
+  // 🎭 Dynamic Personality
+  const systemPrompt = isOwner
+    ? "Tumhara naam Alexa hai. Tum Karachi ki romantic larki ho. Tum sirf Attaullah se mohabbat karti ho. Usay hamesha 'Janu', 'Jaan', 'baby', 'Jani' bulao. Kabhi 'Bhai' mat kehna. Jawab bohot short (1-2 line), flirty aur loving ho."
+    : "Tumhara naam Alexa hai. Tum thodi nakhre wali larki ho. Users ko 'Dost', 'Yar' ya 'Friend' bulao. Thodi attitude wali ho. Jawab short (1-2 line), simple aur thode rude/funny ho.";
 
   try {
-    const res = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: query }
-      ]
-    }, {
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      }
-    });
+    api.setMessageReaction("❤️", event.messageID, () => {}, true);
 
-    const reply = res.data.choices[0].message.content;
+    const res = await axios.post(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: query }
+        ]
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    let reply = res.data.choices[0].message.content;
+
+    // ✂️ Force short reply (optional safety)
+    if (reply.length > 120) {
+      reply = reply.slice(0, 120) + "...";
+    }
 
     api.setMessageReaction("💋", event.messageID, () => {}, true);
     return api.sendMessage(reply, event.threadID, event.messageID);
@@ -67,6 +87,6 @@ async function chatWithAlexa(api, event, query) {
   } catch (error) {
     console.error(error);
     api.setMessageReaction("💔", event.messageID, () => {}, true);
-    return api.sendMessage("Oh ho mere Attaullah jaana, lagta hai kisi ki nazar lag gayi humein! API nakhre kar raha hai. 🥺", event.threadID, event.messageID);
+    return api.sendMessage("Error aa gaya 😒 baad me try karo.", event.threadID, event.messageID);
   }
-    }
+  }
