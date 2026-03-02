@@ -1,59 +1,173 @@
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
 // ================= CONFIG =================
 module.exports.config = {
   name: "alexa",
-  version: "11.0.0",
+  version: "15.0.0",
   hasPermssion: 0,
   credits: "SINDHI",
-  description: "Alexa AI - Attaullah's Only Love",
+  description: "Alexa AI - Full Smart System",
   commandCategory: "AI",
-  usages: "alexa [text]",
+  usages: "alexa [on/off/text]",
   cooldowns: 3
 };
 
 // ================= OWNER UID =================
-const OWNER_UID = "100003615741592"; 
+const OWNER_UID = "100003615741592";
 
-// ================= AUTO REPLY LOGIC =================
+// ================= SETTINGS FILE =================
+const settingsPath = path.join(__dirname, "alexaSettings.json");
+
+if (!fs.existsSync(settingsPath)) {
+  fs.writeFileSync(settingsPath, JSON.stringify({}));
+}
+
+function getSettings() {
+  return JSON.parse(fs.readFileSync(settingsPath));
+}
+
+function saveSettings(data) {
+  fs.writeFileSync(settingsPath, JSON.stringify(data, null, 2));
+}
+
+// ================= ABUSE FILTER =================
+const badWords = [
+  "mc","bc","gandu","madarchod","behenchod",
+  "tmkc","lund","chutiya","kutta","kutti"
+];
+
+function normalize(text) {
+  return text.toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function containsAbuse(text) {
+  const clean = normalize(text);
+  return badWords.some(word => clean.includes(word));
+}
+
+// ================= AUTO REPLY =================
 module.exports.handleEvent = async function ({ api, event }) {
-  const { body, type, messageReply, threadID, messageID, senderID } = event;
+  const { body, senderID, threadID, messageID, type, messageReply } = event;
   if (!body || senderID == api.getCurrentUserID()) return;
+
+  const settings = getSettings();
+  const groupState = settings[threadID];
+
+  if (groupState === false) return;
 
   const input = body.toLowerCase();
 
-  // Trigger if starts with 'alexa' OR replying to bot's message
+  // 🔥 Abuse detect
+  if (containsAbuse(input)) {
+    return api.sendMessage(
+      "Oye 😏 zaban control me rakho warna Alexa attitude dikha degi!",
+      threadID,
+      messageID
+    );
+  }
+
   if (
-    input.startsWith("alexa") || 
-    (type === "message_reply" && messageReply && messageReply.senderID === api.getCurrentUserID())
+    input.startsWith("alexa") ||
+    (type === "message_reply" &&
+      messageReply &&
+      messageReply.senderID === api.getCurrentUserID())
   ) {
-    const query = input.startsWith("alexa") ? body.replace(/alexa/i, "").trim() : body;
-    if (!query && input === "alexa") return api.sendMessage("Jee Jaan? Kuch bolo to sahi... 😘", threadID, messageID);
-    
+    const query = input.startsWith("alexa")
+      ? body.replace(/alexa/i, "").trim()
+      : body;
+
+    if (!query && input === "alexa") {
+      return api.sendMessage("Haan bolo 😏 kya baat hai?", threadID, messageID);
+    }
+
     return chatWithAlexa(api, event, query || "hi");
   }
 };
 
-// ================= COMMAND RUN =================
+// ================= COMMAND =================
 module.exports.run = async function ({ api, event, args }) {
-  const { threadID, messageID } = event;
-  const content = args.join(" ");
+  const { threadID, messageID, senderID } = event;
+  const content = args.join(" ").toLowerCase();
 
-  if (!content) return api.sendMessage("Kya hua? Kuch bolo na... 😏", threadID, messageID);
+  const settings = getSettings();
+
+  // 🔍 Check owner present in group
+  let isOwnerInGroup = false;
+  try {
+    const threadInfo = await api.getThreadInfo(threadID);
+    isOwnerInGroup = threadInfo.participantIDs.includes(OWNER_UID);
+  } catch (e) {}
+
+  // ================= ON =================
+  if (content === "on") {
+    if (isOwnerInGroup && senderID !== OWNER_UID) {
+      return api.sendMessage(
+        "Owner group me mojood hai 😏 sirf woh mujhe ON kar sakta hai",
+        threadID,
+        messageID
+      );
+    }
+
+    settings[threadID] = true;
+    saveSettings(settings);
+
+    return api.sendMessage("Alexa ab is group me ON ho gayi hai ✅", threadID, messageID);
+  }
+
+  // ================= OFF =================
+  if (content === "off") {
+    if (isOwnerInGroup && senderID !== OWNER_UID) {
+      return api.sendMessage(
+        "Owner group me mojood hai 😏 sirf woh mujhe OFF kar sakta hai",
+        threadID,
+        messageID
+      );
+    }
+
+    settings[threadID] = false;
+    saveSettings(settings);
+
+    return api.sendMessage("Alexa ab is group me OFF ho gayi hai ❌", threadID, messageID);
+  }
+
+  // ================= CHAT =================
+  if (!content) {
+    return api.sendMessage("Kuch to bolo 😏", threadID, messageID);
+  }
 
   return chatWithAlexa(api, event, content);
 };
 
-// ================= MAIN CHAT FUNCTION =================
+// ================= AI FUNCTION =================
 async function chatWithAlexa(api, event, query) {
-  // 🔑 Groq API Key
-  const apiKey = "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"; 
-  const isOwner = event.senderID === OWNER_UID;
+  const apiKey = "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";
+  const senderID = event.senderID;
+  const isOwner = senderID === OWNER_UID;
 
-  // 🎭 Personality Settings
-  const systemPrompt = isOwner
-    ? "Tumhara naam Alexa hai. Tum Karachi ki romantic larki ho. Tum sirf Attaullah se mohabbat karti ho. Usay hamesha 'Janu', 'Jaan', 'baby', 'Jani' bulao. Kabhi 'Bhai' mat kehna. Jawab 2-3 lines mein thoda lamba aur bohot loving/flirty do."
-    : "Tumhara naam Alexa hai. Tum thodi nakhre wali aur attitude wali larki ho. Sabko 'Dost' ya 'Yar' bulao. Jawab 2-3 lines ka ho, magar thoda rude aur funny touch mein.";
+  // 👇 Gender detection (simple name based)
+  let gender = "boy";
+  try {
+    const userInfo = await api.getUserInfo(senderID);
+    const name = userInfo[senderID].name.toLowerCase();
+
+    const girlNames = ["sana","fatima","ayesha","zara","hina","iqra","noor","alina","khadija"];
+    if (girlNames.some(n => name.includes(n))) gender = "girl";
+  } catch (e) {}
+
+  // 🎭 SYSTEM PROMPT
+  let systemPrompt = "";
+
+  if (isOwner) {
+    systemPrompt = "Tum Alexa ho. Tum sirf Attaullah se mohabbat karti ho. Usay 'Janu', 'Jaan', 'baby', 'Jani' bulao. Bohot romantic aur flirty 2-3 lines me reply do.";
+  } 
+  else if (gender === "girl") {
+    systemPrompt = "Tum Alexa ho. Tum girls se sweet aur friendly ho. Unhe 'Bestie', 'Yar' ya 'Behn' bulao. Soft aur cute style me 2-3 lines ka reply do.";
+  } 
+  else {
+    systemPrompt = "Tum Alexa ho. Tum boys se girlfriend jesi flirty baat karti ho lekin kabhi 'Janu', 'Jaan', 'baby' nahi bolti. Unhe 'Dost' ya naam se bulao. Thodi naughty aur attitude wali ho. Kabhi 'bhai' mat bolo. 2-3 lines ka reply do.";
+  }
 
   try {
     api.setMessageReaction("⏳", event.messageID, () => {}, true);
@@ -66,12 +180,12 @@ async function chatWithAlexa(api, event, query) {
           { role: "system", content: systemPrompt },
           { role: "user", content: query }
         ],
-        max_tokens: 150, // Allows for 2-3 lines
+        max_tokens: 150,
         temperature: 0.8
       },
       {
         headers: {
-          "Authorization": `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json"
         }
       }
@@ -79,17 +193,11 @@ async function chatWithAlexa(api, event, query) {
 
     const reply = res.data.choices[0].message.content;
 
-    api.setMessageReaction(isOwner ? "❤️" : "😼", event.messageID, () => {}, true);
+    api.setMessageReaction(isOwner ? "❤️" : "😏", event.messageID, () => {}, true);
     return api.sendMessage(reply, event.threadID, event.messageID);
 
   } catch (error) {
-    console.error("Alexa Error:", error.response ? error.response.data : error.message);
     api.setMessageReaction("⚠️", event.messageID, () => {}, true);
-    
-    // Custom error message for API limits
-    if (error.response && error.response.status === 429) {
-        return api.sendMessage("Oho, thoda sakoon karo! Bot bohot fast reply de raha hai, thodi der baad try karo. 🙄", event.threadID, event.messageID);
-    }
-    return api.sendMessage("Net ka masla hai ya API limit khatam, dobara koshish karo yar. 😒", event.threadID, event.messageID);
+    return api.sendMessage("API ya net issue hai 😒 baad me try karo", event.threadID, event.messageID);
   }
-     }
+}
