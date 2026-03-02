@@ -76,7 +76,7 @@ const islamicMessages = [
     // Isha Prayer - 7:48 PM
     {
         timer: '19:48:00',
-        message: ['🕌 **Isha Prayer Time** 🕌\n\nاللَّهُمَّ أَجِرْنِي مِنَ النَّارِ\n"O Allah, protect me from the Fire"\n\n🌙 Time for Isha prayer - the night prayer\n✨ End your day in worship and gratitude\n\n**By Kashif Raza**']
+        message: ['🕌 **Isha Prayer Time** 🕌\n\nاللَّهُمَّ أَجِرْنِي مِنَ النَّارِ\n"O Allah, protect me from the Fire"\n\n🌙 Time for Isha prayer - the night prayer\n✨ End your day in worship and gratitude\n\n**By Attaullah**']
     },
     // Night Greeting - 9:00 PM
     {
