@@ -1,92 +1,139 @@
 module.exports.config = {
   name: "pair",
-  version: "1.0.0", 
+  version: "2.0.0",
   hasPermssion: 0,
-  credits: "SARDAR RDX",
-  description: "Find your perfect match in the group.",
-  commandCategory: "Love", 
-  usages: "pair [@mention/reply]", 
+  credits: "Modified by You",
+  description: "HD Couple Poster with Random Background",
+  commandCategory: "Love",
+  usages: "pair [@mention/reply]",
   cooldowns: 15
 };
 
-module.exports.run = async function({ api, event, Threads, Users, args }) {
+module.exports.run = async function ({ api, event }) {
   const axios = require("axios");
   const fs = require("fs-extra");
   const path = require("path");
+  const Canvas = require("canvas");
 
   try {
-    const threadData = await api.getThreadInfo(event.threadID);
-    const participantIDs = threadData.participantIDs;
-    const tle = Math.floor(Math.random() * 101);
+    const threadInfo = await api.getThreadInfo(event.threadID);
+    const participants = threadInfo.participantIDs;
     const botID = api.getCurrentUserID();
-    
-    // Determine the partner ID
+    const tle = Math.floor(Math.random() * 101);
+
+    // Select partner
     let id;
     if (Object.keys(event.mentions).length > 0) {
-      id = Object.keys(event.mentions)[Object.keys(event.mentions).length - 1];
+      id = Object.keys(event.mentions)[0];
     } else if (event.messageReply) {
       id = event.messageReply.senderID;
-    } else if (args.join(" ").match(/\d+/g)) {
-      const uids = args.join(" ").match(/\d+/g);
-      id = uids[uids.length - 1];
     } else {
-      const listUserID = participantIDs.filter(ID => ID != botID && ID != event.senderID);
-      if (listUserID.length === 0) return api.sendMessage("❌ Group mein koi aur member nahi mila!", event.threadID);
-      id = listUserID[Math.floor(Math.random() * listUserID.length)];
+      const list = participants.filter(uid => uid != botID && uid != event.senderID);
+      if (list.length === 0)
+        return api.sendMessage("❌ Group mein koi aur member nahi mila!", event.threadID);
+      id = list[Math.floor(Math.random() * list.length)];
     }
 
-    if (!id) return api.sendMessage("❌ Kisi member ko select karein!", event.threadID);
-    if (id == event.senderID) return api.sendMessage("❌ Aap apne saath pairing nahi kar sakte!", event.threadID);
+    if (id == event.senderID)
+      return api.sendMessage("❌ Aap apne saath pairing nahi kar sakte!", event.threadID);
 
-    // Getting user names safely
+    // Get user info
     const senderInfo = await api.getUserInfo(event.senderID);
     const partnerInfo = await api.getUserInfo(id);
-    
-    const senderName = senderInfo[event.senderID]?.name || "Facebook User";
-    const partnerName = partnerInfo[id]?.name || "Facebook User";
-    
+
+    const senderName = senderInfo[event.senderID]?.name || "User";
+    const partnerName = partnerInfo[id]?.name || "User";
+
     const arraytag = [
       { id: event.senderID, tag: senderName },
       { id: id, tag: partnerName }
     ];
 
+    // Create cache folder
     const cacheDir = path.join(__dirname, "cache");
     if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
 
-    const avtPath1 = path.join(cacheDir, `avt_${event.senderID}.png`);
-    const avtPath2 = path.join(cacheDir, `avt_${id}.png`);
-    const gifPath = path.join(cacheDir, "giflove.png");
+    const avtPath1 = path.join(cacheDir, `avt1.png`);
+    const avtPath2 = path.join(cacheDir, `avt2.png`);
+    const posterPath = path.join(cacheDir, `couple.png`);
 
-    const [avatar1, avatar2, gifLove] = await Promise.all([
-      axios.get(`https://graph.facebook.com/${event.senderID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" }),
-      axios.get(`https://graph.facebook.com/${id}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" }),
-      axios.get(`https://i.ibb.co/wC2JJBb/trai-tim-lap-lanh.gif`, { responseType: "arraybuffer" })
-    ]);
+    // Download avatars
+    const avatar1 = await axios.get(
+      `https://graph.facebook.com/${event.senderID}/picture?width=512&height=512`,
+      { responseType: "arraybuffer" }
+    );
+    const avatar2 = await axios.get(
+      `https://graph.facebook.com/${id}/picture?width=512&height=512`,
+      { responseType: "arraybuffer" }
+    );
 
     fs.writeFileSync(avtPath1, Buffer.from(avatar1.data));
     fs.writeFileSync(avtPath2, Buffer.from(avatar2.data));
-    fs.writeFileSync(gifPath, Buffer.from(gifLove.data));
 
-    const imglove = [
-      fs.createReadStream(avtPath1),
-      fs.createReadStream(gifPath),
-      fs.createReadStream(avtPath2)
-    ];
+    // Create Canvas
+    const canvas = Canvas.createCanvas(1080, 1080);
+    const ctx = canvas.getContext("2d");
 
-    const msg = {
-      body: `┏━•❃°•°❀°•°❃•━┓\n\n𝐎𝐰𝐧𝐞𝐫 ·˚ ༘₊·꒰➳: ̗̀➛    🍓  𝐂𝐇𝐔𝐙𝐈 𝐊𝐀 𝐂𝐀𝐑𝐓𝐎𝐎𝐍 \n\n┗━•❃°•°❀°•°❃•━┛ \n\n ✦ ━━━━ ༺♡༻ ━━━━ ✦\n\n [❝ 𝑇𝑢𝑗ℎ𝑘𝑜 𝑑𝑒𝑘ℎ 𝑘𝑒 𝑏𝑎𝑠 𝑒𝑘 𝑘ℎ𝑦𝑎𝑎𝑙 𝑎𝑎𝑡𝑎 ℎ𝑎𝑖,\n𝐷𝑖𝑙 𝑘𝑎ℎ𝑡𝑎 ℎ𝑎𝑖 𝑘𝑎𝑠ℎ 𝑡𝑢 𝑠𝑎𝑎𝑡ℎ ℎ𝑜... ❞]\n\n✦ ━━━━ ༺♡༻ ━━━━ ✦\n\n[❝ 𝐸𝑘 𝑊𝑎𝑞𝑡 𝑎𝑎𝑦𝑒 𝑍𝑖𝑛𝑑𝑎𝑔𝑖 𝑚𝑒𝑖𝑛...\n\n 𝐽𝑎ℎ𝑎𝑎𝑛 𝑡𝑢 𝑣𝑖 𝑚𝑒𝑟𝑒 𝑝ÿ𝑎𝑟 𝑚𝑒𝑖𝑛 ℎ𝑜 ❞]\n\n✦ ━━━━ ༺♡༻ ━━━━ ✦\n\n┌──═━┈━═──┐\n\n➻ 𝐍𝐀ɱɘ ✦  ${senderName} \n\n➻ 𝐍𝐀ɱɘ ✦  ${partnerName} \n\n└──═━┈━═──┘\n\n✦ ━━━━ ༺♡༻ ━━━━ ✦\n\n🌸🍁𝐘𝐎𝐔𝐑 𝐋𝐎𝐕𝐄 𝐋𝐄𝐕𝐄𝐋💝 : ╰┈➤ ${tle}%\n` + senderName + " " + "🌺" + " " + partnerName,
+    // Auto Random Background
+    const bgFolder = path.join(__dirname, "cache", "background");
+    if (!fs.existsSync(bgFolder)) fs.mkdirSync(bgFolder, { recursive: true });
+
+    const backgrounds = fs.readdirSync(bgFolder).filter(file =>
+      file.endsWith(".jpg") || file.endsWith(".png")
+    );
+
+    if (backgrounds.length === 0) {
+      ctx.fillStyle = "#ff4d6d";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+      const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+      const bgPath = path.join(bgFolder, randomBg);
+      const background = await Canvas.loadImage(bgPath);
+      ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    }
+
+    const img1 = await Canvas.loadImage(avtPath1);
+    const img2 = await Canvas.loadImage(avtPath2);
+
+    function drawCircle(image, x, y, size) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(image, x, y, size, size);
+      ctx.restore();
+    }
+
+    drawCircle(img1, 150, 300, 350);
+    drawCircle(img2, 580, 300, 350);
+
+    ctx.font = "150px Arial";
+    ctx.fillText("💖", 470, 520);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 70px Arial";
+    ctx.fillText(senderName, 150, 750);
+    ctx.fillText(partnerName, 580, 750);
+
+    ctx.font = "bold 90px Arial";
+    ctx.fillText(`Love: ${tle}%`, 350, 900);
+
+    const buffer = canvas.toBuffer();
+    fs.writeFileSync(posterPath, buffer);
+
+    return api.sendMessage({
+      body: `💞 COUPLE POSTER GENERATED 💞\n\n${senderName} ❤️ ${partnerName}\nLove Level: ${tle}%`,
       mentions: arraytag,
-      attachment: imglove
-    };
+      attachment: fs.createReadStream(posterPath)
+    }, event.threadID, () => {
+      fs.unlinkSync(avtPath1);
+      fs.unlinkSync(avtPath2);
+      fs.unlinkSync(posterPath);
+    });
 
-    return api.sendMessage(msg, event.threadID, (err) => {
-      if (err) console.error("Error sending message:", err);
-      [avtPath1, avtPath2, gifPath].forEach(p => {
-        if (fs.existsSync(p)) fs.unlinkSync(p);
-      });
-    }, event.messageID);
   } catch (err) {
-    console.error("Pair command error:", err);
-    return api.sendMessage(`⚠️ Error: ${err.message}`, event.threadID);
+    console.error(err);
+    return api.sendMessage("⚠️ Error: " + err.message, event.threadID);
   }
 };
