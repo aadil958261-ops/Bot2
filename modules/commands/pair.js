@@ -1,187 +1,93 @@
 module.exports.config = {
   name: "pair",
-  version: "3.0.0",
+  version: "1.0.0", 
   hasPermssion: 0,
-  credits: "Rose-Gold Edition by You",
-  description: "HD Rose-Gold Couple Poster with Blurred Cover & Glow",
-  commandCategory: "Love",
-  usages: "pair [@mention/reply]",
+  credits: "SARDAR RDX",
+  description: "Find your perfect match in the group.",
+  commandCategory: "Love", 
+  usages: "pair [@mention/reply]", 
   cooldowns: 15
 };
 
-module.exports.run = async function ({ api, event }) {
+module.exports.run = async function({ api, event, Threads, Users, args }) {
   const axios = require("axios");
   const fs = require("fs-extra");
   const path = require("path");
-  const Canvas = require("canvas");
 
   try {
-    const threadInfo = await api.getThreadInfo(event.threadID);
-    const participants = threadInfo.participantIDs;
+    const threadData = await api.getThreadInfo(event.threadID);
+    const participantIDs = threadData.participantIDs;
+    const tle = Math.floor(Math.random() * 101);
     const botID = api.getCurrentUserID();
-    const love = Math.floor(Math.random() * 101);
-
-    // Select partner
-    let partnerID;
+    
+    // Determine the partner ID
+    let id;
     if (Object.keys(event.mentions).length > 0) {
-      partnerID = Object.keys(event.mentions)[0];
+      id = Object.keys(event.mentions)[Object.keys(event.mentions).length - 1];
     } else if (event.messageReply) {
-      partnerID = event.messageReply.senderID;
+      id = event.messageReply.senderID;
+    } else if (args.join(" ").match(/\d+/g)) {
+      const uids = args.join(" ").match(/\d+/g);
+      id = uids[uids.length - 1];
     } else {
-      const list = participants.filter(
-        id => id !== botID && id !== event.senderID
-      );
-      if (list.length === 0)
-        return api.sendMessage("❌ Koi aur member nahi mila!", event.threadID);
-      partnerID = list[Math.floor(Math.random() * list.length)];
+      const listUserID = participantIDs.filter(ID => ID != botID && ID != event.senderID);
+      if (listUserID.length === 0) return api.sendMessage("❌ Group mein koi aur member nahi mila!", event.threadID);
+      id = listUserID[Math.floor(Math.random() * listUserID.length)];
     }
 
-    if (partnerID === event.senderID)
-      return api.sendMessage("❌ Apne saath pairing nahi hoti 😅", event.threadID);
+    if (!id) return api.sendMessage("❌ Kisi member ko select karein!", event.threadID);
+    if (id == event.senderID) return api.sendMessage("❌ Aap apne saath pairing nahi kar sakte!", event.threadID);
 
-    // User info
+    // Getting user names safely
     const senderInfo = await api.getUserInfo(event.senderID);
-    const partnerInfo = await api.getUserInfo(partnerID);
-
-    const senderName = senderInfo[event.senderID]?.name || "User";
-    const partnerName = partnerInfo[partnerID]?.name || "User";
-
-    const mentions = [
+    const partnerInfo = await api.getUserInfo(id);
+    
+    const senderName = senderInfo[event.senderID]?.name || "Facebook User";
+    const partnerName = partnerInfo[id]?.name || "Facebook User";
+    
+    const arraytag = [
       { id: event.senderID, tag: senderName },
-      { id: partnerID, tag: partnerName }
+      { id: id, tag: partnerName }
     ];
 
-    // Cache
     const cacheDir = path.join(__dirname, "cache");
-    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
 
-    const avt1 = path.join(cacheDir, "avt1.png");
-    const avt2 = path.join(cacheDir, "avt2.png");
-    const out = path.join(cacheDir, "pair.png");
+    const avtPath1 = path.join(cacheDir, `avt_${event.senderID}.png`);
+    const avtPath2 = path.join(cacheDir, `avt_${id}.png`);
+    const gifPath = path.join(cacheDir, "giflove.png");
 
-    // Download avatars
-    const a1 = await axios.get(
-      `https://graph.facebook.com/${event.senderID}/picture?width=512&height=512`,
-      { responseType: "arraybuffer" }
-    );
-    const a2 = await axios.get(
-      `https://graph.facebook.com/${partnerID}/picture?width=512&height=512`,
-      { responseType: "arraybuffer" }
-    );
+    const [avatar1, avatar2, gifLove] = await Promise.all([
+      axios.get(`https://graph.facebook.com/${event.senderID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" }),
+      axios.get(`https://graph.facebook.com/${id}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" }),
+      axios.get(`https://i.ibb.co/wC2JJBb/trai-tim-lap-lanh.gif`, { responseType: "arraybuffer" })
+    ]);
 
-    fs.writeFileSync(avt1, Buffer.from(a1.data));
-    fs.writeFileSync(avt2, Buffer.from(a2.data));
+    fs.writeFileSync(avtPath1, Buffer.from(avatar1.data));
+    fs.writeFileSync(avtPath2, Buffer.from(avatar2.data));
+    fs.writeFileSync(gifPath, Buffer.from(gifLove.data));
 
-    // Get cover
-    async function getCover(uid) {
-      try {
-        const res = await axios.get(
-          `https://graph.facebook.com/${uid}?fields=cover&access_token=${api.getAccessToken()}`
-        );
-        return res.data.cover?.source || null;
-      } catch {
-        return null;
-      }
-    }
+    const imglove = [
+      fs.createReadStream(avtPath1),
+      fs.createReadStream(gifPath),
+      fs.createReadStream(avtPath2)
+    ];
 
-    // Canvas
-    const canvas = Canvas.createCanvas(1080, 1080);
-    const ctx = canvas.getContext("2d");
+    const msg = {
+      body: `┏━•❃°•°❀°•°❃•━┓\n\n𝐎𝐰𝐧𝐞𝐫 ·˚ ༘₊·꒰➳: ̗̀➛    🍓  SINDHI \n\n┗━•❃°•°❀°•°❃•━┛ \n\n ✦ ━━━━ ༺♡༻ ━━━━ ✦\n\n [❝ 𝑇𝑢𝑗ℎ𝑘𝑜 𝑑𝑒𝑘ℎ 𝑘𝑒 𝑏𝑎𝑠 𝑒𝑘 𝑘ℎ𝑦𝑎𝑎𝑙 𝑎𝑎𝑡𝑎 ℎ𝑎𝑖,\n𝐷𝑖𝑙 𝑘𝑎ℎ𝑡𝑎 ℎ𝑎𝑖 𝑘𝑎𝑠ℎ 𝑡𝑢 𝑠𝑎𝑎𝑡ℎ ℎ𝑜... ❞]\n\n✦ ━━━━ ༺♡༻ ━━━━ ✦\n\n[❝ 𝐸𝑘 𝑊𝑎𝑞𝑡 𝑎𝑎𝑦𝑒 𝑍𝑖𝑛𝑑𝑎𝑔𝑖 𝑚𝑒𝑖𝑛...\n\n 𝐽𝑎ℎ𝑎𝑎𝑛 𝑡𝑢 𝑣𝑖 𝑚𝑒𝑟𝑒 𝑝ÿ𝑎𝑟 𝑚𝑒𝑖𝑛 ℎ𝑜 ❞]\n\n✦ ━━━━ ༺♡༻ ━━━━ ✦\n\n┌──═━┈━═──┐\n\n➻ 𝐍𝐀ɱɘ ✦  ${senderName} \n\n➻ 𝐍𝐀ɱɘ ✦  ${partnerName} \n\n└──═━┈━═──┘\n\n✦ ━━━━ ༺♡༻ ━━━━ ✦\n\n🌸🍁𝐘𝐎𝐔𝐑 𝐋𝐎𝐕𝐄 𝐋𝐄𝐕𝐄𝐋💝 : ╰┈➤ ${tle}%\n` + senderName + " " + "🌺" + " " + partnerName,
+      mentions: arraytag,
+      attachment: imglove
+    };
 
-    // 🌫 Blurred cover background
-    const coverURL = await getCover(event.senderID);
-    if (coverURL) {
-      const cover = await axios.get(coverURL, { responseType: "arraybuffer" });
-      const img = await Canvas.loadImage(Buffer.from(cover.data));
-
-      ctx.filter = "blur(18px)";
-      ctx.drawImage(img, 0, 0, 1080, 1080);
-      ctx.filter = "none";
-
-      ctx.fillStyle = "rgba(0,0,0,0.45)";
-      ctx.fillRect(0, 0, 1080, 1080);
-    } else {
-      ctx.fillStyle = "#1b1b1b";
-      ctx.fillRect(0, 0, 1080, 1080);
-    }
-
-    // 🌹 Rose-Gold overlay
-    const roseGlow = ctx.createRadialGradient(540, 420, 200, 540, 420, 700);
-    roseGlow.addColorStop(0, "rgba(230,161,180,0.45)");
-    roseGlow.addColorStop(1, "rgba(230,161,180,0)");
-    ctx.fillStyle = roseGlow;
-    ctx.fillRect(0, 0, 1080, 1080);
-
-    // Load avatars
-    const img1 = await Canvas.loadImage(avt1);
-    const img2 = await Canvas.loadImage(avt2);
-
-    // Rose-Gold DP circle
-    function drawCircleRose(image, x, y, size) {
-      ctx.beginPath();
-      ctx.arc(x + size/2, y + size/2, size/2 + 10, 0, Math.PI * 2);
-      ctx.strokeStyle = "#E6A1B4";
-      ctx.lineWidth = 12;
-      ctx.stroke();
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(x + size/2, y + size/2, size/2, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.drawImage(image, x, y, size, size);
-      ctx.restore();
-    }
-
-    drawCircleRose(img1, 150, 300, 350);
-    drawCircleRose(img2, 580, 300, 350);
-
-    // 💖 Rose-Gold heart glow
-    ctx.font = "180px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    ctx.shadowColor = "#E6A1B4";
-    ctx.shadowBlur = 35;
-    ctx.fillStyle = "#FFD1DC";
-    ctx.fillText("💖", 540, 520);
-
-    ctx.shadowBlur = 10;
-    ctx.fillStyle = "#FF4D6D";
-    ctx.fillText("💖", 540, 520);
-
-    ctx.shadowBlur = 0;
-    ctx.textAlign = "start";
-    ctx.textBaseline = "alphabetic";
-
-    // Text
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 70px Arial";
-    ctx.shadowColor = "#E6A1B4";
-    ctx.shadowBlur = 10;
-
-    ctx.fillText(senderName, 150, 760);
-    ctx.fillText(partnerName, 580, 760);
-
-    ctx.font = "bold 90px Arial";
-    ctx.fillText(`Love: ${love}%`, 350, 920);
-
-    ctx.shadowBlur = 0;
-
-    // Save
-    fs.writeFileSync(out, canvas.toBuffer());
-
-    return api.sendMessage({
-      body: `💖 ROSE-GOLD COUPLE 💖\n\n${senderName} ❤️ ${partnerName}\nLove Level: ${love}%`,
-      mentions,
-      attachment: fs.createReadStream(out)
-    }, event.threadID, () => {
-      fs.unlinkSync(avt1);
-      fs.unlinkSync(avt2);
-      fs.unlinkSync(out);
-    });
-
-  } catch (e) {
-    console.error(e);
-    api.sendMessage("⚠️ Error: " + e.message, event.threadID);
+    return api.sendMessage(msg, event.threadID, (err) => {
+      if (err) console.error("Error sending message:", err);
+      [avtPath1, avtPath2, gifPath].forEach(p => {
+        if (fs.existsSync(p)) fs.unlinkSync(p);
+      });
+    }, event.messageID);
+  } catch (err) {
+    console.error("Pair command error:", err);
+    return api.sendMessage(`⚠️ Error: ${err.message}`, event.threadID);
   }
 };
+    
