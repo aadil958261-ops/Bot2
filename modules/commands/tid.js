@@ -16,7 +16,7 @@ function decorate(msg) {
 ${msg}
 
 ⚝──⭒─⭑─⭒──⚝
-Made by 𝐊𝐀𝐒𝐇𝐈𝐅 𝐑𝐀𝐙𝐀
+Made by 🅢🅘🅝🅓🅗🅘
 `;
 }
 
@@ -26,4 +26,5 @@ module.exports.run = async function({ api, event }) {
     event.threadID, 
     event.messageID
   );
+
 };
