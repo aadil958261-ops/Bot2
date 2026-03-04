@@ -12,7 +12,7 @@ module.exports.config = {
 };
 
 const groq = new Groq({
-  apiKey: "TERI_GROQ_API_KEY_YAHAN_DAAL" 
+  apiKey: "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" 
 });
 
 const devilStatus = new Map();
