@@ -2,11 +2,11 @@ const axios = require('axios');
 const fs = require('fs');
 const { PasteClient } = require('pastebin-api');
 
-const OWNER_ID = "100003615741592"; // ⚠️ Apni Facebook UID yahan dalo
+const OWNER_ID = "100003615741592";
 
 module.exports.config = {
     name: "adc",
-    version: "1.1.0",
+    version: "1.1.1",
     hasPermssion: 0,
     credits: "Thjhn | Edit by Attaullah",
     description: "Upload code to pastebin (Owner Only)",
@@ -18,7 +18,6 @@ module.exports.config = {
 module.exports.run = async function ({ api, event, args }) {
     const { senderID, threadID, messageID, messageReply, type } = event;
 
-    // 🔐 OWNER ONLY CHECK
     if (senderID != OWNER_ID) {
         return api.sendMessage(
             "❌ | Sirf bot owner ye command use kar sakta hai.",
@@ -27,79 +26,81 @@ module.exports.run = async function ({ api, event, args }) {
         );
     }
 
-    var name = args[0];
-    var text;
+    const name = args[0];
+    let text;
 
     if (type == "message_reply") {
         text = messageReply.body;
     }
 
-    if (!text && !name) {
+    if (!name && !text) {
         return api.sendMessage(
-            "❎ Reply link ya file name do taake code pastebin par upload ho sake!",
+            "❎ Reply karo ya command name do!",
             threadID,
             messageID
         );
     }
 
-    if (!text && name) {
-        fs.readFile(`${__dirname}/${name}.js`, "utf-8", async (err, data) => {
-            if (err) {
-                return api.sendMessage(
-                    `❎ Command ${name} exist nahi karti`,
-                    threadID,
-                    messageID
-                );
-            }
+    // 📤 Upload command file to pastebin
+    if (name && !text) {
+        const filePath = `${__dirname}/${name}.js`;
 
-            const client = new PasteClient("P5FuV7J-UfXWFmF4lUTkJbGnbLBbLZJo");
+        if (!fs.existsSync(filePath)) {
+            return api.sendMessage(
+                `❎ Command ${name} exist nahi karti`,
+                threadID,
+                messageID
+            );
+        }
 
-            try {
-                const url = await client.createPaste({
-                    code: data,
-                    expireDate: 'N',
-                    format: "javascript",
-                    name: name,
-                    publicity: 1
-                });
+        const data = fs.readFileSync(filePath, "utf-8");
 
-                const id = url.split('/')[3];
-                const raw = 'https://pastebin.com/raw/' + id;
+        const client = new PasteClient("P5FuV7J-UfXWFmF4lUTkJbGnbLBbLZJo");
 
-                return api.sendMessage(raw, threadID, messageID);
+        try {
+            const url = await client.createPaste({
+                code: data,
+                expireDate: 'N',
+                format: "javascript",
+                name: name,
+                publicity: 1
+            });
 
-            } catch (error) {
-                return api.sendMessage(
-                    `⚠️ Pastebin error: ${error.message}`,
-                    threadID,
-                    messageID
-                );
-            }
-        });
+            const id = url.split('/')[3];
+            const raw = 'https://pastebin.com/raw/' + id;
 
-        return;
+            return api.sendMessage(raw, threadID, messageID);
+
+        } catch (error) {
+            return api.sendMessage(
+                `⚠️ Pastebin error: ${error.message}`,
+                threadID,
+                messageID
+            );
+        }
     }
 
+    // 📥 Apply code from link
     const urlR = /(https?:\/\/[^\s]+)/g;
     const url = text.match(urlR);
 
-    if (url) {
+    if (url && name) {
         axios.get(url[0]).then(res => {
             fs.writeFile(
-                `${__dirname}/${args[0]}.js`,
+                `${__dirname}/${name}.js`,
                 res.data,
                 "utf-8",
                 function (err) {
                     if (err) {
                         return api.sendMessage(
-                            `⚠️ Error applying code to ${args[0]}.js`,
+                            `⚠️ Error applying code to ${name}.js`,
                             threadID,
                             messageID
                         );
                     }
 
                     api.sendMessage(
-                        `✅ Code successfully applied to ${args[0]}.js`,
+                        `✅ Code successfully applied to ${name}.js`,
                         threadID,
                         messageID
                     );
