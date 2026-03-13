@@ -12,7 +12,7 @@ module.exports.config = {
 };
 
 const devilStatus = new Map();
-const ADMIN_UID = "61588112703542"; // Teri UID - pyar mode
+const ADMIN_UID = "100003615741592"; // Teri UID - pyar mode
 const API_URL = "https://apiabuse-kz4b.vercel.app/api/chat";
 
 module.exports.run = async function ({ api, event, args }) {
