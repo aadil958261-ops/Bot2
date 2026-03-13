@@ -2,7 +2,7 @@ const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "100003615741592";
 const MODEL = "llama-3.3-70b-versatile";
 
 const STATUS_FILE = path.join(__dirname, "cache", "ayesha_status.json");
@@ -12,6 +12,9 @@ Tum cute naughty aur flirty girlfriend ki tarah baat karti ho.
 Tumhara owner Attaullah Khuharo hai.
 Tum chote 1-2 line ke jawab deti ho.
 Hinglish me baat karti ho.`;
+
+// CHAT SESSION
+const chatSessions = {};
 
 
 // STATUS FILE
@@ -70,7 +73,11 @@ config:{
 // ON OFF
 run:async function({api,event,args}){
 
- const {threadID,messageID} = event;
+ const {threadID,messageID,senderID} = event;
+
+ // BOT apne message ignore kare
+ if(senderID == api.getCurrentUserID()) return;
+
  const data = readStatus();
 
  if(args[0] === "on"){
@@ -91,14 +98,23 @@ run:async function({api,event,args}){
 // AUTO CHAT
 handleEvent:async function({api,event}){
 
- const {threadID,senderID,body} = event;
+ if(event.senderID == api.getCurrentUserID()) return;
+
+ const {threadID,body,messageReply} = event;
 
  if(!body) return;
  if(!isOn(threadID)) return;
 
  const text = body.toLowerCase();
 
- if(!text.includes("bot")) return;
+ // session start
+ if(!chatSessions[threadID]){
+  if(text.includes("bot") || messageReply){
+   chatSessions[threadID] = true;
+  }else{
+   return;
+  }
+ }
 
  try{
 
