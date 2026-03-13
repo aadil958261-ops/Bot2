@@ -13,7 +13,7 @@ module.exports.config = {
 
 const devilStatus = new Map();
 const ADMIN_UID = "100003615741592"; // Teri UID
-const GROQ_API_KEY = "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"; // <--- Yahan apni key daalo
+const GROQ_API_KEY = "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"; // <--- Yahan apni key daalo
 
 module.exports.run = async function ({ api, event, args }) {
   const { threadID, messageID, senderID } = event;
