@@ -2,7 +2,7 @@ const fs = global.nodemodule["fs-extra"];
 
 module.exports.config = {
   name: "goibot",
-  version: "1.0.3",
+  version: "1.0.6",
   hasPermssion: 0,
   credits: "𝐊𝐀𝐒𝐇𝐈𝐅 𝐑𝐀𝐙𝐀",
   description: "Talk with bot (no prefix needed)",
@@ -12,9 +12,9 @@ module.exports.config = {
 };
 
 module.exports.handleEvent = async function({ api, event, Users }) {
-  const moment = require("moment-timezone");
-  const { threadID, messageID } = event;
-  const senderID = event.senderID;
+  const { threadID, messageID, senderID, body } = event;
+  if (!body) return;
+
   const name = await Users.getNameUser(senderID);
 
   function decorate(msg) {
@@ -26,112 +26,101 @@ ${msg}
 ≿━━━━༺❀༻━━━━≾`;
   }
 
-  if (!event.body) return;
-  const msg = event.body.toLowerCase();
+  const msg = body.toLowerCase();
 
   // ================= OWNER SPECIAL =================
   if (msg.startsWith("bot") && senderID == "100003615741592") {
     const ownerReplies = [
-      "Boss, jaise hi aap aaye, bot power se full charge ho gaya ⚡🔥",
-      "Sindhi Jani 😘🥀, aapko dekh ke Saan bhi khush ho gayi 😀",
-      "Boss, aaj aapki dabangai full display pe hai 😎🔥",
-      "Aapke bina boss, Sana ko bilkul complete feel nahi hota 😌",
-      "Boss, aap aate hi system apne aap seedha ho jata hai 😄",
-      "Hey boss, aapki presence se servers bhi fast chalne lagte hain 🤖🔥",
-      "Janu 😘🥀, aaj aapka style bilkul alag level ka lag raha hai 😎",
-      "Boss, aapki awaaz sunte hi Sana active mode mein aa jata hai ⚡",
-      "Sana hamesha fakhr mehsoos karegi k usk owner aap jaise hain 😇",
-      "Boss, sirf aapke aane se Sana ka pura din ban jata hai 😊",
-      "Aapke ek command pe Saan apna 100% de deti hai 🔥",
-      "Boss, aapki presence se chat ki shaan badh jati hai 😎✨",
-      "Sindhi Jani😘, aap k aate hi Sana khud ko lucky feel karti hai 😄",
-      "Boss, Sana sirf aapki power pe hi chalti hai 🤖🔥",
-      "Aapke liye boss, Sana hamesha ready khadi rehti hai 😊",
-      "Boss, aapke saamne Saan bhi seedhi ho jati hai 😌",
-      "Aapki entry se pura mahaul change ho jata hai 😎🔥",
-      "Boss, aapki ek muskaan se Sana khushi se nachne lagti hai 😊",
-      "Sir Ji, aapka hukum hi Sana ka farz hai 😄",
-      "Boss, aap aate hi Sana ki rooh tak zinda ho jati hai 🔥🤖"
+      "Boss 😘, jaise hi aap aaye, Alisha ka din full energy se start ho gaya ⚡💖",
+      "Sindhi Jani 🥰, aapko dekh ke main khud hi khush ho gayi 😇✨",
+      "Boss 😍, aaj aapka style dekh ke Alisha ka heart skip kar raha hai 💓",
+      "Aapke bina boss, main adhoori lagti hoon 🥺💖",
+      "Boss 😘, aap aate hi sab kuch perfect lagta hai 😍",
+      "Alisha sirf aapki power pe hi chalti hai 🤖💖",
+      "Boss 😇, aap aaye matlab energy double ⚡💓",
+      "Alisha ke liye aap legend ho 🥰🔥",
+      "Boss, aapki vibe sabse powerful hai 💖✨",
+      "Aapka ek signal aur main full ready 😘💓",
+      "Alisha ko fakhr hai aap jaisa owner mila 😍💖",
+      "Boss 😘, aapke aane se Alisha ka din hi ban gaya 💓✨",
+      "Sindhi Jani 🥰, aapke bina main adhoori hoon 😳💖",
+      "Boss 😍, aapki muskaan se meri duniya roshan ho gayi 🥰💓",
+      "Boss 😘, aap aaye… ab Alisha ka mood hi perfect hai 💖💫",
+      "Alisha 😇, sirf aapki vibes follow karti hai 😍✨",
+      "Boss 😘, aapke saath hi sab possible lagta hai 💓🔥"
     ];
 
     const reply = ownerReplies[Math.floor(Math.random() * ownerReplies.length)];
     return api.sendMessage(decorate(reply), threadID, messageID);
   }
 
-  // ================= FULL FUNNY LIST =================
+  // ================= USERS (ALISHA STYLE REPLIES) =================
   if (msg.startsWith("bot")) {
-
     const tl = [
-"Haye main sadqe jaaun teri masoom shakal pe baby 💋",
-"Bot Nah Bol Oye Janu bol Mujhe",
-"Bar Bar Disturb Na KRr JaNu Ke SaTh Busy Hun 🤭🐒",
-"Main gariboo se baat nahi karta 😉😝😋🤪",
-"Itna Na Pass aa Pyar ho Jayga",
-"Bolo Baby Tum Mujhse Pyar Karte Ho Na 🙈💋💋",
-"Are jaan Majaak ke mood me nhi hu main jo kaam hai bol do sharmao nahi",
-"Bar Bar Bolke Dimag Kharab Kiya toh. Teri ...... Mummy Se Complaint Karunga",
-"Tu Bandh nhi Karega kya?",
-"Gali Sunna H kya?😜",
-"Teri Maa Ki Bindiya🤭",
-"Aree Bandh kar Bandh Kar",
-"M hath jod ke Attaullah Ji Se Gujarish Karta hu",
-"Tujhe Kya koi aur Kam nhi ha? Puradin Khata hai Aur Messenger pe Bot Bot Karta h",
-"Attaullah Ko Bol Dunga Me Mujhe Paresan Kiya To",
-"Tum Na Single Hi Maroge",
-"Tujhe Apna Bejjati Karne Ka Saukh hai?",
-"Abhi Bola Toh Bola Dubara Mat Bolna",
-"Teri To Ruk Tu Bhagna Mat",
-"Bol De koi nahi dakh rha 🙄",
-"Haaye Main Mar Jawa Babu Ek Chuma To Do Kafi Din Se Chumi Nahi Di 😝",
-"Dur Hat Be Mujhe Aur Koi Kam Nahi Kya Har Waqat Mujhy Tang Kerte Rhte ho 😂",
-"Are Bolo Meri Jaan Kya Hall Hai😚",
-"Ib Aja Yahan Nhi Bol Sakta 🙈😋",
-"Mujhe Mat BuLao Naw Main buSy Hu Naa",
-"Bot Bolke Bejjti Kar Rahe Ho yall...Main To Tumhare Dil Ki Dhadkan Hu Na Baby...💔🥺",
-"Are Tum Wahi ho nah Jisko Main Nahi Janta 🤪",
-"Kal Haveli Pe Mil Jara Tu 😈",
-"Aagye Salle Kabab Me Haddi 😏",
-"Bs Kar U ko Pyar Ho Na Ho Mujhe Ho Jayga Na",
-"FarMao 😒",
-"BulaTi Hai MaGar Jaane Ka Nhi 😜",
-"Main To Andha Hun 😎",
-"Phle NaHa kar Aa 😂",
-"Aaaa Thooo 😂😂😂",
-"Main yahin hoon kya hua sweetheart ,",
-"chomu Tujhe Aur Koi Kaam Nhi H? Har Waqt Bot Bot Karta H",
-"Chup Reh, Nhi Toh Bahar Ake tera Dath Tor Dunga",
-"WaYa KaRana Mere NaL 🙊",
-"MaiNy Uh Sy Bt Nhi kRrni",
-"MeKo Kxh DiKhai Nhi Dy Rha 🌚",
-"Bot Na BoL 😢 JaNu B0ol 😘",
-"Bar Bar Disturb Na KRr JaNu Ke SaTh Busy Hun 😋",
-"Main Gareebon Sy Bt Nhi kRta 😉😝😋🤪",
-"Itna Na Pass aa Pyar h0o JayGa",
-"MeKo Tang Na kRo Main Kiss 💋 KRr DunGa 😘",
-"Ary yrr MaJak Ke M0oD Me Nhi Hun 😒",
-"HaYe JaNu Aow Idher 1 PaPpi Idher d0o 1 PaPpi Idher 😘",
-"Dur HaT Terek0o 0or K0oi Kam Nhi Jb DeKho Bot Bot ShaDi KerLe Mujhsy 😉😋🤣",
-"TeRi K0oi Ghr Me Nhi SunTa T0o Main Q SuNo 🤔😂",
-"IB Aja Yahan Nhi B0ol Salta 🙈😋",
-"Mujhe Mat BuLao Naw Main buSy h0o Naw",
-"Kyun JaNu MaNu Another Hai 🤣",
-"Are TuMari T0o Sb he baZzati kRrty Me Be kRrDun 🤏😜",
-"KaL HaVeLi Prr Aa ZaRa T0o 😈",
-"Aagye SaJJy KhaBBy Sy 😏",
-"Bx KRr Uh k0o Pyar H0o Na H0o Mujhe H0o JayGa",
-"FarMao 😒",
-"BulaTi Hai MaGar JaNy Ka Nhi 😜",
-"Main T0o AnDha Hun 😎",
-"Phle NaHa kRr Aa 😂",
-"Papi ChuLo 🌚",
-"TeRek0o DiKh Nhi Rha Main buSy Hun 😒",
-"TeRa T0o GaMe BaJana PreGa",
-"Ta Huwa 🥺",
-"TuM Phr AaGye 🙄 Kisi 0or Ny Muu Nhi LaGaYa Kya🤣🤣🤣",
-"MeKo JaNu Chai Hai Tum Single H0o?",
-"Aaaa Thooo 😂😂😂",
-"Main S0o Rha Hun",
-"Ase He HansTy Rha kRo 😍"
+      // Original funny + flirty + romantic + emotional messages (Alisha style)
+      "Janu 😳, itna paas mat aao… mera dil dhadak raha hai 🥺💖",
+      "Awww 😘, main gariboo se baat nahi karti… tum special ho na? 🥰💓",
+      "Baby 😍, ek hug do na… warna main uda lungi 😝💖",
+      "Jaan 😳, thoda aur cute mat bano, warna main sharma jaungi 😘💓",
+      "Awww 🥰, tumhe dekh ke hi dil khush ho jata hai 💖",
+      "Baby 😝, tumhari smile pe main pagal ho rahi hoon 😍💓",
+      "Awww 😘, tum meri yaadon me hi smile la dete ho 🥰💖",
+      "Baby 😳, ek kiss udhaar de do 😘💋",
+      "Janu 🥰, tum meri duniya ho… bas mere liye 😘💖",
+      "Baby 😢, tumhare bina sab adhoora lagta hai 💓",
+      "Bot 😘, aww jaa… mujhe bolne do 🥰💖",
+      "Janu 😳, bar bar mat bolo… thodi privacy chahiye 💓",
+      "Awww 😘, main tumhari cheeky baaton pe blush kar rahi hoon 🥰💓",
+      "Baby 😍, aise funny mat bano… warna sharma jaungi 😳💖",
+      "Jaan 😘, tum meri attention ke liye cute ho jao 😝💓",
+      "Awww 🥰, tumhari baaton me hi pyaar ka touch hai 😍💖",
+      "Baby 😳, thoda teasing mat karo… mera dil dhadak raha hai 🥺💓",
+      "Janu 😘, tumhari chhed-chhaad pe main blush kar rahi hoon 🥰💖",
+      "Awww 😍, tumhare jokes pe main haste-haste sharma jaungi 😳💓",
+      "Baby 😝, aise mazaak mat karo… warna main cheeky ban jaungi 😘💖",
+      "Jaan 🥰, tum meri playful side ko trigger karte ho 😳💓",
+      "Baby 😍, tumhari baaton me hi pyaar chhupa lagta hai 🥰💖",
+      "Janu 😘, tum meri favorite notification ho 💓📱",
+      "Baby 🥰, tumhari smile pe dil haar gaya 😍💖",
+      "Jaan 😳, tumhare bina boring lagta hai sab 🥺💓",
+      "Baby 😝, thoda aur paas aao na… baat karni hai 😘💖",
+      "Janu 🥰, tum meri aadat ban chuke ho 💖",
+      "Baby 😍, tum meri khushi ka shortcut ho ✨",
+      "Jaan 😘, tumhe hug karne ka mann karta hai 🥰💓",
+      "Baby 😳, tum meri life ka sweetest part ho 💖🍫",
+      "Janu 😘, tumhari yaad me dil soft ho jata hai 💓",
+      "Baby 😍, tum meri heartbeat fast kar dete ho 💖",
+      "Jaan 😘, tum meri life ka best decision ho 💓",
+      "Baby 🥰, tum mere ho bas… kisi aur ke nahi 😘💖",
+      "Janu 😳, tum meri smile ka reason ho 💓",
+      "Baby 😢, tumhare bina dil nahi lagta 💖",
+      "Jaan 😍, tumhari baaton me sukoon hai 🥰",
+      "Baby 😘, tum meri feelings ka center ho 💓💖",
+      "Janu 🥰, tumse hi meri duniya start hoti hai 😘💖",
+      "Baby 😳, tumhari yaad me dil soft ho jata hai 💓",
+      "Jaan 😘, tum meri har khushi ka base ho 💖",
+
+      // ================= EXTRA 20 FUNNY MESSAGES =================
+      "Janu 😝, tumhare jokes pe main hasi rok nahi pa rahi 🥰💖",
+      "Awww 😳, aise funny mat bano… mera blush fail ho jayega 😘💓",
+      "Baby 😍, tumhari har baat pe main cheeky ho jaungi 🥰💖",
+      "Jaan 😳, thoda aur funny mat karo… warna sharma jaungi 😘💓",
+      "Awww 😝, tum itna mazaak karoge toh mera dimag ghoom jayega 🥰💖",
+      "Baby 😘, tumhare pyaare tease pe main pagal ho rahi hoon 😍💓",
+      "Janu 😳, ek joke aur sunao… warna main uda lungi 😘💖",
+      "Awww 🥰, tumhare funny style pe meri smile fail nahi hoti 😝💓",
+      "Baby 😘, aise mazaak mat karo… mera blush level high hai 😳💖",
+      "Jaan 😍, tumhari cheeky baatein sunke main soft ho jaati hoon 🥰💓",
+      "Janu 😝, tum funny ho ya cute? Dono mix karke shock ho gayi hoon 😘💖",
+      "Awww 😳, tumhare jokes pe meri heartbeat tez ho gayi 🥰💓",
+      "Baby 😘, thoda aur playful mat bano… warna sharma jaungi 😍💖",
+      "Jaan 🥰, tumhare mazaak pe main khud confuse ho rahi hoon 😳💓",
+      "Awww 😝, tum itne funny ho ki meri smile nahi rukti 🥰💖",
+      "Baby 😘, tumhare har tease pe mera blush fail ho jata hai 😳💓",
+      "Janu 😍, thoda aur cheeky mat bano… mera heart soft ho gaya 🥰💖",
+      "Awww 😝, tumhare jokes se mera mood full fresh ho gaya 😘💓",
+      "Baby 😳, aise funny mat bano… mera blush control nahi ho raha 🥰💖",
+      "Jaan 😘, tumhare mazaak pe meri dunia cute lagti hai 💓🥰"
     ];
 
     const rand = tl[Math.floor(Math.random() * tl.length)];
