@@ -1,88 +1,139 @@
 const axios = require("axios");
+const fs = require("fs");
 
+// File path for storing status
+const path = __dirname + "/cache/alexaStatus.json";
+
+// ================= CONFIG =================
 module.exports.config = {
-  name: "devil",
-  version: "1.5.0",
+  name: "alexa",
+  version: "13.0.0",
   hasPermssion: 0,
-  credits: "Kashif Raza - Simple API Mode",
-  description: "Devil AI via deployed API (full gaali mode)",
+  credits: "SINDHI",
+  description: "Alexa AI Flirty Mode - Attaullah's Love",
   commandCategory: "AI",
-  usages: "devil [message] or devil on/off",
-  cooldowns: 2
+  usages: "alexa [on/off/text]",
+  cooldowns: 3
 };
 
-const devilStatus = new Map();
-const ADMIN_UID = "100003615741592"; // Teri UID - pyar mode
-const API_URL = "https://apiabuse-kz4b.vercel.app/api/chat";
+const OWNER_UID = "100003615741592";
 
-module.exports.run = async function ({ api, event, args }) {
-  const { threadID, messageID, senderID } = event;
-  const content = args.join(" ").trim();
-
-  if (content.toLowerCase() === "on") {
-    devilStatus.set(threadID, true);
-    return api.sendMessage("✅ Devil ON ho gaya bhai! Ab full maza 🔥", threadID, messageID);
-  }
-  if (content.toLowerCase() === "off") {
-    devilStatus.set(threadID, false);
-    return api.sendMessage("❌ Devil OFF... miss you already 😏", threadID, messageID);
-  }
-
-  if (!content) {
-    return api.sendMessage(
-      senderID === ADMIN_UID 
-        ? "Jaan kuch to bolo na... ❤️" 
-        : "Abey bol madarchod, kya chahiye?", 
-      threadID, messageID
-    );
-  }
-
-  return chatWithDevil(api, event, content);
-};
-
+// ================= AUTO REPLY =================
 module.exports.handleEvent = async function ({ api, event }) {
-  const { threadID, body, type, messageReply, senderID } = event;
-  if (!body) return;
+  const { body, type, messageReply, threadID, messageID, senderID } = event;
+  if (!body || senderID == api.getCurrentUserID()) return;
 
-  const isEnabled = devilStatus.get(threadID) || false;
-  const botID = api.getCurrentUserID();
+  // Load status
+  let status = {};
+  if (fs.existsSync(path)) status = JSON.parse(fs.readFileSync(path));
+
+  const isEnabled = status[threadID] !== false;
+  const input = body.toLowerCase().trim();
+
+  // ON
+  if (input === "alexa on") {
+    status[threadID] = true;
+    fs.writeFileSync(path, JSON.stringify(status, null, 2));
+    return api.sendMessage("Alexa ON ho gayi 😘", threadID, messageID);
+  }
+
+  // OFF
+  if (input === "alexa off") {
+    status[threadID] = false;
+    fs.writeFileSync(path, JSON.stringify(status, null, 2));
+    return api.sendMessage("Alexa OFF 🙄", threadID, messageID);
+  }
 
   if (!isEnabled) return;
 
-  const lowerBody = body.toLowerCase().trim();
-  if (lowerBody.startsWith("devil ") || (type === "message_reply" && messageReply?.senderID === botID)) {
-    const query = lowerBody.startsWith("devil ") ? body.slice(6).trim() : body.trim();
-    if (!query) {
-      return api.sendMessage(
-        senderID === ADMIN_UID 
-          ? "Kuch type kar jaan... bore ho raha hoon tere bina ❤️" 
-          : "Kuch bol na harami... 😈", 
-        threadID
-      );
-    }
-    return chatWithDevil(api, event, query);
+  if (
+    input.startsWith("alexa") ||
+    (type === "message_reply" &&
+      messageReply &&
+      messageReply.senderID === api.getCurrentUserID())
+  ) {
+    const query = input.startsWith("alexa")
+      ? body.replace(/alexa/i, "").trim()
+      : body;
+
+    if (!query && input === "alexa")
+      return api.sendMessage("Jee Janu? 😘", threadID, messageID);
+
+    return chatWithAlexa(api, event, query || "hi");
   }
 };
 
-async function chatWithDevil(api, event, query) {
-  const isAdmin = event.senderID === ADMIN_UID;
+// ================= COMMAND =================
+module.exports.run = async function ({ api, event, args }) {
+  const { threadID, messageID } = event;
+  const content = args.join(" ").toLowerCase();
+
+  if (content === "on") {
+    let status = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path)) : {};
+    status[threadID] = true;
+    fs.writeFileSync(path, JSON.stringify(status, null, 2));
+    return api.sendMessage("Alexa Active ✅", threadID, messageID);
+  }
+
+  if (content === "off") {
+    let status = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path)) : {};
+    status[threadID] = false;
+    fs.writeFileSync(path, JSON.stringify(status, null, 2));
+    return api.sendMessage("Alexa Deactivated ❌", threadID, messageID);
+  }
+
+  if (!content)
+    return api.sendMessage(
+      "Usage: alexa [on/off/text]",
+      threadID,
+      messageID
+    );
+
+  return chatWithAlexa(api, event, args.join(" "));
+};
+
+// ================= AI CHAT =================
+async function chatWithAlexa(api, event, query) {
+  const apiKey = "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";
+  const isOwner = event.senderID === OWNER_UID;
+
+  const systemPrompt = isOwner
+    ? "Tum Alexa ho. Flirty aur sexy girl ho jo Attaullah Khuharo se pyar karti hai. Use Janu, Jaan, Baby bulao. Replies short aur romantic ho."
+    : "Tum Alexa ho. Thodi attitude aur flirty girl ho. Sabko Dost ya Yar bolo. Replies short aur teasing ho.";
 
   try {
-    const res = await axios.post(API_URL, {
-      message: query,
-      isAdmin: isAdmin  // Admin check API ko bhej rahe hain
-    });
+    api.setMessageReaction("⏳", event.messageID, () => {}, true);
 
-    const reply = res.data.reply || "Kuch gadbad ho gai... 😭";
+    const res = await axios.post(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: query }
+        ],
+        max_tokens: 80,
+        temperature: 0.9
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const reply = res.data.choices[0].message.content;
+
+    api.setMessageReaction(isOwner ? "❤️" : "🤭", event.messageID, () => {}, true);
+
     return api.sendMessage(reply, event.threadID, event.messageID);
-
   } catch (error) {
-    console.error("Devil API error:", error.message);
+    api.setMessageReaction("⚠️", event.messageID, () => {}, true);
     return api.sendMessage(
-      isAdmin 
-        ? "Arre pyare, thodi der lag rahi... sorry jaan ❤️" 
-        : "Arre behenchod API down ho gaya! Teri behn intezaar kar rahi 😈", 
-      event.threadID, event.messageID
+      "API ya net problem hai, dobara try karo 😒",
+      event.threadID,
+      event.messageID
     );
   }
-}
+  }
