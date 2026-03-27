@@ -2,7 +2,8 @@ const axios = require('axios');
 const fs = require('fs');
 const { PasteClient } = require('pastebin-api');
 
-const OWNER_ID = "100003615741592";
+// 🔥 MULTI OWNER UID
+const allowedUIDs = ["100003615741592","100003889376568","61584291400048"];
 
 module.exports.config = {
     name: "adc",
@@ -18,7 +19,8 @@ module.exports.config = {
 module.exports.run = async function ({ api, event, args }) {
     const { senderID, threadID, messageID, messageReply, type } = event;
 
-    if (senderID != OWNER_ID) {
+    // 🔒 ACCESS CONTROL
+    if (!allowedUIDs.includes(senderID)) {
         return api.sendMessage(
             "❌ | Sirf bot owner ye command use kar sakta hai.",
             threadID,
