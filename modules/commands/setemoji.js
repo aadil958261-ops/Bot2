@@ -1,5 +1,6 @@
-﻿module.exports = {
-  config: { credits: "SARDAR RDX",
+module.exports = {
+  config: {
+    credits: "SARDAR RDX",
     name: 'setemoji',
     aliases: ['emoji', 'groupemoji'],
     description: 'Change the group emoji',
@@ -8,32 +9,49 @@
     groupOnly: true,
     prefix: true
   },
-  
-  async run({ api, event, args, send, config }) {
+
+  run: async ({ api, event, args }) => {
     const { threadID, senderID } = event;
-    
-    const threadInfo = await api.getThreadInfo(threadID);
-    const adminIDs = threadInfo.adminIDs.map(a => a.id);
-    
-    const isGroupAdmin = adminIDs.includes(senderID);
-    const isBotAdmin = config.ADMINBOT.includes(senderID);
-    
-    if (!isGroupAdmin && !isBotAdmin) {
-      return send.reply('Only group admins can change the group emoji.');
-    }
-    
-    const emoji = args[0];
-    
-    if (!emoji) {
-      return send.reply('Please provide an emoji.');
-    }
-    
+
     try {
+      const threadInfo = await api.getThreadInfo(threadID);
+      const adminIDs = threadInfo.adminIDs.map(a => a.id);
+
+      // bot admin check (safe fallback)
+      const botAdmins = global.config?.ADMINBOT || [];
+
+      const isGroupAdmin = adminIDs.includes(senderID);
+      const isBotAdmin = botAdmins.includes(senderID);
+
+      if (!isGroupAdmin && !isBotAdmin) {
+        return api.sendMessage(
+          "❌ Only group admins can change the group emoji.",
+          threadID
+        );
+      }
+
+      const emoji = args[0];
+
+      if (!emoji) {
+        return api.sendMessage(
+          "⚠️ Please provide an emoji.\nExample: setemoji 😎",
+          threadID
+        );
+      }
+
       await api.changeThreadEmoji(emoji, threadID);
-      return send.reply(`Group emoji changed to: ${emoji}`);
+
+      return api.sendMessage(
+        `✅ Group emoji changed to: ${emoji}`,
+        threadID
+      );
+
     } catch (error) {
-      return send.reply('Failed to change group emoji.');
+      console.log("setemoji error:", error);
+      return api.sendMessage(
+        "❌ Failed to change group emoji.",
+        threadID
+      );
     }
   }
 };
-
