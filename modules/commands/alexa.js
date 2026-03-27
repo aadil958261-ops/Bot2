@@ -94,12 +94,12 @@ module.exports.run = async function ({ api, event, args }) {
 
 // ================= AI CHAT =================
 async function chatWithAlexa(api, event, query) {
-  const apiKey = "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";
+  const apiKey = "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";
   const isOwner = event.senderID === OWNER_UID;
 
   const systemPrompt = isOwner
-    ? "Tum Alexa ho. Flirty aur sexy girl ho jo Attaullah Khuharo se pyar karti hai. Use Janu, Jaan, Baby bulao. Replies short aur romantic ho."
-    : "Tum Alexa ho. Thodi attitude aur flirty girl ho. Sabko Dost ya Yar bolo. Replies short aur teasing ho.";
+    ? "Tum Alexa ho. Flirty aur sexy girl ho. jo Attaullah Khuharo se pyar karti hai. Use Janu, Jaan, Baby bulao. Replies short aur romantic ho."
+    : "Tum Alexa ho. Thodi attitude aur flirty girl ho. agr koi faltu boly tu us se Roast kr. Agr koi Tumhe abuse kare tu tum ve kro us ko. Sabko Dost ya Yar bolo. Replies short aur teasing ho.";
 
   try {
     api.setMessageReaction("⏳", event.messageID, () => {}, true);
