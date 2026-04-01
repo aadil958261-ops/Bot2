@@ -1,73 +1,94 @@
+module.exports.config = {
+    name: "fyt2",
+    version: "1.3.1",
+    hasPermssion: 2,
+    credits: "ATTAULLAH BHAI",
+    description: "War with UID, Tag & On/Off (Fixed & Slower)",
+    commandCategory: "group",
+    usages: "fyt2 [on/off] [UID/@mention/name]",
+    cooldowns: 10,
+    dependencies: {
+        "fs-extra": "",
+        "axios": ""
+    }
+}
+
 const fs = require("fs-extra");
 const path = require("path");
 
-module.exports = {
-  config: {
-    name: "fyt2",
-    version: "6.2.0",
-    credits: "ATTAULLAH KING",
-    countDown: 5,
-    role: 2,
-    shortDescription: "War script using galiyan.json",
-    longDescription: "Starts an infinite loop fetching lines from galiyan.json array.",
-    category: "war",
-    guide: "{pn} on [target] or {pn} off"
-  },
+if (!global.fytActiveThreads) {
+    global.fytActiveThreads = new Map();
+}
 
-  onStart: async function ({ api, event, args, message }) {
-    const { threadID } = event;
-    
-    // Path: modules folder ke andar 'galiyan.json'
-    const jsonPath = path.join(__dirname, "galiyan.json");
+const galiyanPath = path.join(__dirname, "galiyan.json");
+let galiyan = [];
 
-    if (!global.fyt2War) global.fyt2War = new Map();
+try {
+    galiyan = JSON.parse(fs.readFileSync(galiyanPath, "utf8"));
+} catch (e) {
+    console.log("Galiyan file load nahi hui:", e);
+}
 
-    if (args[0] === "off") {
-      global.fyt2War.delete(threadID);
-      return message.reply("FYT-2 War mode OFF ho gaya! ✅");
+module.exports.run = async function({ api, args, event }) {
+    const { threadID, messageID, mentions } = event;
+    const action = args[0]?.toLowerCase();
+
+    // STOP COMMAND
+    if (action === "off") {
+        if (global.fytActiveThreads.has(threadID)) {
+            clearInterval(global.fytActiveThreads.get(threadID));
+            global.fytActiveThreads.delete(threadID);
+            return api.sendMessage("❌ FYT2 War command band kar di gayi hai. Credits: ATTAULLAH BHAI", threadID, messageID);
+        } else {
+            return api.sendMessage("FYT2 pehle se hi band hai.", threadID, messageID);
+        }
     }
 
-    if (args[0] === "on") {
-      let target = args.slice(1).join(" ");
-      if (!target) return message.reply("Target ka naam ya UID toh likho! 😤");
+    // START COMMAND
+    if (action === "on") {
+        if (global.fytActiveThreads.has(threadID)) {
+            return api.sendMessage("FYT2 pehle se hi chal raha hai.", threadID, messageID);
+        }
 
-      if (!fs.existsSync(jsonPath)) {
-        return message.reply("Error: galiyan.json file nahi mili. Check karo ke file 'modules' folder mein hai ya nahi.");
-      }
+        let targetID = "";
+        let targetName = "";
 
-      if (global.fyt2War.has(threadID)) {
-        return message.reply("War pehle se hi on hai! 🔥");
-      }
+        if (Object.keys(mentions).length > 0) {
+            targetID = Object.keys(mentions)[0];
+            targetName = mentions[targetID].replace("@", "");
+        } else if (args[1] && !isNaN(args[1])) {
+            targetID = args[1];
+            targetName = "Oye";
+        } else {
+            targetName = args.slice(1).join(" ") || "Oye";
+        }
 
-      // JSON file read karke array mein convert karna
-      const rawData = fs.readFileSync(jsonPath, "utf-8");
-      const savageLines = JSON.parse(rawData); 
+        const randomGali = () => {
+            if (!galiyan || galiyan.length === 0) return "Abe Oye! 😡";
+            return galiyan[Math.floor(Math.random() * galiyan.length)];
+        };
 
-      if (!Array.isArray(savageLines) || savageLines.length === 0) {
-        return message.reply("Error: galiyan.json khali hai ya format sahi nahi hai!");
-      }
+        api.sendMessage(`✅ FYT2 War Mode ON!\nTarget: ${targetName}\nSpeed: Slow\nBy: ATTAULLAH BHAI`, threadID);
 
-      global.fyt2War.set(threadID, true);
-      message.reply(`FYT-2 War started on: ${target} 😈\nTotal lines loaded: ${savageLines.length}`);
+        // Speed: 3 seconds per message
+        const intervalTime = 3000; 
 
-      async function startWar() {
-        if (!global.fyt2War.has(threadID)) return;
+        const interval = setInterval(() => {
+            const msg = randomGali();
+            if (targetID) {
+                api.sendMessage({
+                    body: `${targetName} ${msg}`,
+                    mentions: [{ tag: targetName, id: targetID }]
+                }, threadID);
+            } else {
+                api.sendMessage(`${targetName} ${msg}`, threadID);
+            }
+        }, intervalTime);
 
-        // Array se random line uthana
-        let randomLine = savageLines[Math.floor(Math.random() * savageLines.length)];
-        let finalMessage = `${target} ${randomLine}`;
-
-        api.sendMessage(finalMessage, threadID, (err) => {
-          if (!err) {
-            // 600ms ka delay (aapke requirement ke mutabiq)
-            setTimeout(startWar, 600); 
-          }
-        });
-      }
-
-      startWar();
-    } else {
-      message.reply("Use: fyt2 on [target] or fyt2 off");
+        global.fytActiveThreads.set(threadID, interval);
+        return;
     }
-  }
-};
+
+    return api.sendMessage("Usage: fyt2 on [UID/@tag/name] ya fyt2 off", threadID, messageID);
+}
+  
