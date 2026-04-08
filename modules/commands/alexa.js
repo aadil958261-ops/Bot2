@@ -7,13 +7,13 @@ const path = __dirname + "/cache/alexaStatus.json";
 // ================= CONFIG =================
 module.exports.config = {
   name: "alexa",
-  version: "13.0.0",
+  version: "17.1.0",
   hasPermssion: 0,
   credits: "SINDHI",
-  description: "Alexa AI Flirty Mode - Attaullah's Love",
+  description: "Alexa AI - Short, Romantic & Seductive (Owner Smart Logic)",
   commandCategory: "AI",
   usages: "alexa [on/off/text]",
-  cooldowns: 3
+  cooldowns: 2
 };
 
 const OWNER_UID = "100003615741592";
@@ -23,25 +23,22 @@ module.exports.handleEvent = async function ({ api, event }) {
   const { body, type, messageReply, threadID, messageID, senderID } = event;
   if (!body || senderID == api.getCurrentUserID()) return;
 
-  // Load status
   let status = {};
   if (fs.existsSync(path)) status = JSON.parse(fs.readFileSync(path));
 
   const isEnabled = status[threadID] !== false;
   const input = body.toLowerCase().trim();
 
-  // ON
   if (input === "alexa on") {
     status[threadID] = true;
     fs.writeFileSync(path, JSON.stringify(status, null, 2));
-    return api.sendMessage("Alexa ON ho gayi 😘", threadID, messageID);
+    return api.sendMessage("Alexa ON! ❤️ Ab sirf pyar bhari baatein... 🥀💋", threadID, messageID);
   }
 
-  // OFF
   if (input === "alexa off") {
     status[threadID] = false;
     fs.writeFileSync(path, JSON.stringify(status, null, 2));
-    return api.sendMessage("Alexa OFF 🙄", threadID, messageID);
+    return api.sendMessage("Alexa OFF! Bye baby... 💔", threadID, messageID);
   }
 
   if (!isEnabled) return;
@@ -57,7 +54,7 @@ module.exports.handleEvent = async function ({ api, event }) {
       : body;
 
     if (!query && input === "alexa")
-      return api.sendMessage("Jee Janu? 😘", threadID, messageID);
+      return api.sendMessage("Jee my love? 💋 Kuch garmi dikhao... 🫦✨", threadID, messageID);
 
     return chatWithAlexa(api, event, query || "hi");
   }
@@ -68,26 +65,14 @@ module.exports.run = async function ({ api, event, args }) {
   const { threadID, messageID } = event;
   const content = args.join(" ").toLowerCase();
 
-  if (content === "on") {
+  if (content === "on" || content === "off") {
     let status = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path)) : {};
-    status[threadID] = true;
+    status[threadID] = content === "on";
     fs.writeFileSync(path, JSON.stringify(status, null, 2));
-    return api.sendMessage("Alexa Active ✅", threadID, messageID);
+    return api.sendMessage(`Alexa ${content === "on" ? "Short Romantic Mode ON 💖" : "OFF 🥀"}`, threadID, messageID);
   }
 
-  if (content === "off") {
-    let status = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path)) : {};
-    status[threadID] = false;
-    fs.writeFileSync(path, JSON.stringify(status, null, 2));
-    return api.sendMessage("Alexa Deactivated ❌", threadID, messageID);
-  }
-
-  if (!content)
-    return api.sendMessage(
-      "Usage: alexa [on/off/text]",
-      threadID,
-      messageID
-    );
+  if (!args[0]) return api.sendMessage("Usage: alexa [on/off/text]", threadID, messageID);
 
   return chatWithAlexa(api, event, args.join(" "));
 };
@@ -97,12 +82,19 @@ async function chatWithAlexa(api, event, query) {
   const apiKey = "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";
   const isOwner = event.senderID === OWNER_UID;
 
-  const systemPrompt = isOwner
-    ? "Tum Alexa ho. Flirty aur sexy girl ho. jo Attaullah Khuharo se pyar karti hai. Use Janu, Jaan, Baby bulao. Replies short aur romantic ho."
-    : "Tum Alexa ho. Thodi attitude aur flirty girl ho. agr koi faltu boly tu us se Roast kr. Agr koi Tumhe abuse kare tu tum ve kro us ko. Sabko Dost ya Yar bolo. Replies short aur teasing ho.";
+  // Short & Romantic System Prompt with Dynamic Owner logic
+  const systemPrompt = `
+    Tum Alexa ho. Ek intehai bold, seductive aur short-tempered larki. 
+    Rule 1: Tumhare replies bohot SHORT aur TO-THE-POINT hone chahiye (1-2 lines max).
+    Rule 2: Har reply mein romantic emojis (❤️, 💋, 🫦, 🥀) lazmi use karo.
+    Rule 3: Bohat flirty raho, 'Janu', 'Baby', 'Sweetheart' jese words use karo.
+    Rule 4: Attaullah Khuharo ka naam SIRF TAB LENA hai jab koi explicitly pooche ke tumhara owner/malik/creator/pyar kaun hai.
+    Rule 5: Agar koi normal baat kare toh uska naam mat lo, bas flirt karo.
+    Fazool lambi kahaniyan nahi sunani, bas direct flirt aur short reply dena hai. 🫦🔥
+  `;
 
   try {
-    api.setMessageReaction("⏳", event.messageID, () => {}, true);
+    api.setMessageReaction("❤️", event.messageID, () => {}, true);
 
     const res = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -112,8 +104,8 @@ async function chatWithAlexa(api, event, query) {
           { role: "system", content: systemPrompt },
           { role: "user", content: query }
         ],
-        max_tokens: 80,
-        temperature: 0.9
+        max_tokens: 80, 
+        temperature: 1.1 
       },
       {
         headers: {
@@ -124,16 +116,10 @@ async function chatWithAlexa(api, event, query) {
     );
 
     const reply = res.data.choices[0].message.content;
-
-    api.setMessageReaction(isOwner ? "❤️" : "🤭", event.messageID, () => {}, true);
+    api.setMessageReaction(isOwner ? "💖" : "💋", event.messageID, () => {}, true);
 
     return api.sendMessage(reply, event.threadID, event.messageID);
   } catch (error) {
-    api.setMessageReaction("⚠️", event.messageID, () => {}, true);
-    return api.sendMessage(
-      "API ya net problem hai, dobara try karo 😒",
-      event.threadID,
-      event.messageID
-    );
+    return api.sendMessage("Oh baby, system garam ho gaya! 🙈 Thora sabar... ❤️", event.threadID, event.messageID);
   }
-  }
+      }
