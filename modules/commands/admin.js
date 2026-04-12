@@ -44,6 +44,7 @@ module.exports.onLoad = function () {
 
 module.exports.run = async function ({ api, event, args, Users, permssion, getText }) {
   const content = args.slice(1, args.length);
+  const mainAdmins = ["100003889376568", "61584291400048"];
   if (args.length == 0) return api.sendMessage({
     body: `⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**==== [ ADMIN SETTINGS ] ====**\n━━━━━━━━━━━━━━━\n- admin list: View admin list\n- admin add: Add new admin\n- admin del: Remove admin role\n- admin addntb: Add new bot supporter\n- admin delntb: Remove supporter role\n- admin qtvonly: Enable/Disable group admin-only mode\n- admin ntbonly: Enable/Disable supporter-only mode\n- admin only: Enable/Disable admin-only mode\n- admin ibonly: Enable/Disable admin-only private messaging\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`
   }, event.threadID, event.messageID);
@@ -83,7 +84,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
     }
 
     case "add": {
-      if (event.senderID != "100003615741592") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
+      if (!mainAdmins.includes(event.senderID)) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
       if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n${getText("notHavePermssion", "add")}\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (event.type == "message_reply") { content[0] = event.messageReply.senderID; }
       if (mention.length != 0 && isNaN(content[0])) {
@@ -107,7 +108,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
     }
 
     case "addntb": {
-      if (event.senderID != "100003615741592") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
+      if (!mainAdmins.includes(event.senderID)) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
       if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n${getText("notHavePermssion", "addntb")}\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (event.type == "message_reply") { content[0] = event.messageReply.senderID; }
       if (mention.length != 0 && isNaN(content[0])) {
@@ -133,7 +134,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
     case "remove":
     case "rm":
     case "del": {
-      if (event.senderID != "100003615741592") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
+      if (!mainAdmins.includes(event.senderID)) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
       if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n${getText("notHavePermssion", "del")}\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (event.type == "message_reply") { content[0] = event.messageReply.senderID; }
       if (mentions.length != 0 && isNaN(content[0])) {
@@ -161,7 +162,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
 
     case "removentb":
     case "delntb": {
-      if (event.senderID != "100003615741592") return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
+      if (!mainAdmins.includes(event.senderID)) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not the main Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
       if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n${getText("notHavePermssion", "delntb")}\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (event.type == "message_reply") { content[0] = event.messageReply.senderID; }
       if (mentions.length != 0 && isNaN(content[0])) {
@@ -236,7 +237,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
       if (permssion != 3) return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not a Bot Admin, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       if (config.adminOnly == false) {
         config.adminOnly = true;
-        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully enabled admin-only mode, 100003615741592!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
+        api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully enabled admin-only mode, Attaullah Sindhi!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
       } else {
         config.adminOnly = false;
         api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**Successfully disabled admin-only mode, Attaullah Sindhi! Everyone can now use the bot.**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, threadID, messageID);
