@@ -16,7 +16,7 @@ module.exports.config = {
   cooldowns: 2
 };
 
-const OWNER_UID = "100003615741592";
+const OWNER_UID = "100003889376568";
 
 // ================= AUTO REPLY =================
 module.exports.handleEvent = async function ({ api, event }) {
