@@ -2,18 +2,40 @@ const fs = global.nodemodule["fs-extra"];
 
 module.exports.config = {
   name: "goibot",
-  version: "1.0.6",
+  version: "1.1.0",
   hasPermssion: 0,
   credits: "𝐊𝐀𝐒𝐇𝐈𝐅 𝐑𝐀𝐙𝐀",
-  description: "Talk with bot (no prefix needed)",
+  description: "Talk with bot (with admin lock on/off)",
   commandCategory: "Noprefix",
-  usages: "noprefix",
-  cooldowns: 5,
+  usages: "bot on/off",
+  cooldowns: 2,
 };
 
 module.exports.handleEvent = async function({ api, event, Users }) {
   const { threadID, messageID, senderID, body } = event;
   if (!body) return;
+
+  // Global state check (Bot On/Off storage)
+  if (!global.goibotStatus) global.goibotStatus = new Map();
+
+  const msg = body.toLowerCase();
+  const adminIDs = global.config.ADMINBOT || [];
+
+  // ================= ADMIN CONTROL (ON/OFF) =================
+  if (msg === "bot off") {
+    if (!adminIDs.includes(senderID)) return api.sendMessage("❌ Sirf ATTAULLAH KING ke admins bot off kar sakte hain!", threadID, messageID);
+    global.goibotStatus.set(threadID, false);
+    return api.sendMessage("✅ Bot system is now OFF in this group.", threadID, messageID);
+  }
+
+  if (msg === "bot on") {
+    if (!adminIDs.includes(senderID)) return api.sendMessage("❌ Sirf Bot Admin hi ise ON kar sakta hai!", threadID, messageID);
+    global.goibotStatus.set(threadID, true);
+    return api.sendMessage("✅ Bot system is now ON. Alisha is ready to talk! 🥰", threadID, messageID);
+  }
+
+  // Check if bot is disabled for this thread
+  if (global.goibotStatus.get(threadID) === false) return;
 
   const name = await Users.getNameUser(senderID);
 
@@ -26,9 +48,8 @@ ${msg}
 ≿━━━━༺❀༻━━━━≾`;
   }
 
-  const msg = body.toLowerCase();
-
-  // ================= OWNER SPECIAL =================
+  // ================= OWNER SPECIAL (ATTAULLAH) =================
+  // Yahan aapka senderID use ho raha hai
   if (msg.startsWith("bot") && senderID == "100003615741592") {
     const ownerReplies = [
       "Boss 😘, jaise hi aap aaye, Alisha ka din full energy se start ho gaya ⚡💖",
@@ -57,7 +78,6 @@ ${msg}
   // ================= USERS (ALISHA STYLE REPLIES) =================
   if (msg.startsWith("bot")) {
     const tl = [
-      // Original funny + flirty + romantic + emotional messages (Alisha style)
       "Janu 😳, itna paas mat aao… mera dil dhadak raha hai 🥺💖",
       "Awww 😘, main gariboo se baat nahi karti… tum special ho na? 🥰💓",
       "Baby 😍, ek hug do na… warna main uda lungi 😝💖",
@@ -99,8 +119,6 @@ ${msg}
       "Janu 🥰, tumse hi meri duniya start hoti hai 😘💖",
       "Baby 😳, tumhari yaad me dil soft ho jata hai 💓",
       "Jaan 😘, tum meri har khushi ka base ho 💖",
-
-      // ================= EXTRA 20 FUNNY MESSAGES =================
       "Janu 😝, tumhare jokes pe main hasi rok nahi pa rahi 🥰💖",
       "Awww 😳, aise funny mat bano… mera blush fail ho jayega 😘💓",
       "Baby 😍, tumhari har baat pe main cheeky ho jaungi 🥰💖",
@@ -129,3 +147,4 @@ ${msg}
 };
 
 module.exports.run = function() {};
+    
