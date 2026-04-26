@@ -1,7 +1,7 @@
 {
-  "name": "KASHIF Raza",
+  "name": "SHAAN KHAN",
   "version": "4.5.0",
-  "description": "Developed by Kashif Raza",
+  "description": "Developed by Shaan Khan",
   "main": "mirai.js",
   "scripts": {
     "start": "node index",
@@ -22,6 +22,7 @@
     "acorn": "^8.10.0",
     "aes-js": "^3.1.2",
     "ansi-to-html": "^0.7.2",
+    "arif-babu-downloader": "^1.0.2",
     "archiver": "^6.0.1",
     "axios": "^1.12.2",
     "better-sqlite3": "^11.8.1",
@@ -97,4 +98,4 @@
   "devDependencies": {
     "javascript-obfuscator": "^5.3.0"
   }
-}
+  }
