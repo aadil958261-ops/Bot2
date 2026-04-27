@@ -15,6 +15,7 @@
   "author": "Cao.C.Đạt",
   "license": "GPL-3.0",
   "dependencies": {
+    "openai": "^4.0.0",
     "@cerebras/cerebras_cloud_sdk": "^1.50.0",
     "@dongdev/fca-unofficial": "^1.0.20",
     "@google/generative-ai": "^0.17.0",
