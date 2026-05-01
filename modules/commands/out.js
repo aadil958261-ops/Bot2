@@ -1,9 +1,9 @@
 module.exports.config = {
   name: "out",
-  version: "1.3.0",
+  version: "1.4.0",
   hasPermssion: 0,
   credits: "Modified by Attaullah",
-  description: "Leave one or all groups with poetry (Only Bot Owner)",
+  description: "Leave groups with Owner Order message",
   commandCategory: "Admin",
   usages: "[tid | all]",
   cooldowns: 3
@@ -18,7 +18,7 @@ module.exports.run = async function({ api, event, args }) {
     return api.sendMessage("❌ Only Bot Owner can use this command.", event.threadID, event.messageID);
   }
 
-  const poetry = "Udaas kar ke humein khushiyan manate ho,\nBhula kar humein tum mehfil sajate ho,\nHumein toh tumhari yaad mein rona hi tha,\nMagar afsos tum humein rula kar muskurate ho...";
+  const exitMessage = "⚠️ **NOTICE:**\n\nMere **Owner** ne mujhe is group se exit hone ka hukum diya hai. Hukum ki tameel karte hue main ye group chor raha hoon.\n\nAlvida!";
   const footer = "\n\n— 𝗦𝗜𝗡𝗗𝗛𝗜 𝗞𝗜𝗡𝗚";
 
   // CASE: "out all" - Leave EVERY group
@@ -28,12 +28,16 @@ module.exports.run = async function({ api, event, args }) {
     
     if (groupList.length === 0) return api.sendMessage("Bot kisi bhi group mein nahi hai.", event.threadID);
 
-    api.sendMessage(`༻﹡﹡﹡﹡﹡﹡﹡༺\n\n𝗢𝗿𝗱𝗲𝗿 𝘁𝗼 𝗹𝗲𝗮𝘃𝗲 𝗔𝗟𝗟 𝗴𝗿𝗼𝘂𝗽𝘀 𝗿𝗲𝗰𝗲𝗶𝘃𝗲𝗱!\nTotal groups: ${groupList.length}\n\n༻﹡﹡﹡﹡﹡﹡﹡༺${footer}`, event.threadID);
+    api.sendMessage(`🚀 **Processing...**\nOwner ke hukum par tamam (${groupList.length}) groups se exit kiya ja raha hai.`, event.threadID);
     
     for (const group of groupList) {
-      // Har group mein poetry bhej kar left karega
-      await api.sendMessage(`${poetry}${footer}`, group.threadID);
-      await api.removeUserFromGroup(api.getCurrentUserID(), group.threadID);
+      try {
+        // Pehle message bhejega phir leave karega
+        await api.sendMessage(`${exitMessage}${footer}`, group.threadID);
+        await api.removeUserFromGroup(api.getCurrentUserID(), group.threadID);
+      } catch (e) {
+        console.log(`Could not leave group ${group.threadID}`);
+      }
     }
     return;
   }
@@ -41,10 +45,8 @@ module.exports.run = async function({ api, event, args }) {
   // CASE: "out" - Leave current group (or specific TID if provided)
   const id = args[0] || event.threadID;
 
-  return api.sendMessage(
-    `${poetry}${footer}`,
-    id,
-    () => api.removeUserFromGroup(api.getCurrentUserID(), id)
-  );
+  return api.sendMessage(`${exitMessage}${footer}`, id, () => {
+    api.removeUserFromGroup(api.getCurrentUserID(), id);
+  });
 };
-    
+                                
