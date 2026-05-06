@@ -1,18 +1,18 @@
 {
-  "name": "SHAAN KHAN",
+  "name": "SHAAN-KHAN-BOT",
   "version": "4.5.0",
-  "description": "Developed by Shaan Khan",
+  "description": "Optimized Mirai Bot for Deployment",
   "main": "mirai.js",
   "scripts": {
-    "start": "node index",
-    "login": "node login",
-    "test": "node --trace-warnings --use_strict --async-stack-traces mirai"
+    "start": "node mirai.js",
+    "login": "node login.js",
+    "test": "node --trace-warnings --use_strict --async-stack-traces mirai.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chungdat02/Mirai-V2.git"
   },
-  "author": "Cao.C.Đạt",
+  "author": "Shaan Khan",
   "license": "GPL-3.0",
   "dependencies": {
     "openai": "^4.0.0",
@@ -88,15 +88,7 @@
     "yt-search": "^2.13.1",
     "ytdl-core": "^4.11.5"
   },
-  "bugs": {
-    "url": "https://github.com/chungdat02/Mirai-V2/issues"
-  },
-  "homepage": "https://github.com/chungdat02/Mirai-V2#readme",
   "engines": {
-    "node": ">=20.0.0"
-  },
-  "keywords": [],
-  "devDependencies": {
-    "javascript-obfuscator": "^5.3.0"
+    "node": "20.x"
   }
   }
