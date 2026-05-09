@@ -17,7 +17,7 @@ module.exports.config = {
 };
 
 // Updated Owner UIDs
-const OWNERS = ["61584291400048", "100003889376568"];
+const OWNERS = ["61576393655883", "100002679518256"];
 
 // ================= AUTO REPLY =================
 module.exports.handleEvent = async function ({ api, event }) {
