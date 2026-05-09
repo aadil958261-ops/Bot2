@@ -3,7 +3,7 @@ const fs = require('fs');
 const { PasteClient } = require('pastebin-api');
 
 // 🔥 MULTI OWNER UID
-const allowedUIDs = ["100003615741592","100003889376568","61584291400048"];
+const allowedUIDs = ["61576425552638","61576393655883","100002679518256"];
 
 module.exports.config = {
     name: "adc",
