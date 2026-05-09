@@ -5,38 +5,54 @@ const path = __dirname + "/cache/soniyaStatus.json";
 
 module.exports.config = {
   name: "soniya",
-  version: "21.0.0",
+  version: "22.5.0",
   hasPermssion: 0,
   credits: "ATTAULLAH KHUHARO", 
-  description: "Soniya AI - Bold, Romantic & Nakhre Wali",
+  description: "Soniya AI - Multiple Owners & Auto Off",
   commandCategory: "AI",
   usages: "soniya [on/off/text]",
   cooldowns: 2
 };
 
-const OWNERS = ["61584291400048", "100003889376568"];
+// Updated Owners List
+const OWNERS = [
+  "61576425552638", 
+  "61576393655883", 
+  "100002679518256", 
+  "61584291400048", 
+  "100003889376568"
+];
 
 module.exports.handleEvent = async function ({ api, event }) {
-  const { body, type, messageReply, threadID, messageID, senderID } = event;
-  
+  const { body, threadID, messageID, senderID, type, messageReply } = event;
   if (!body || senderID == api.getCurrentUserID()) return;
+
+  if (!fs.existsSync(__dirname + "/cache")) fs.mkdirSync(__dirname + "/cache");
 
   let status = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path)) : {};
   
-  if (status[threadID] === undefined) {
-    status[threadID] = false; 
-    fs.writeFileSync(path, JSON.stringify(status, null, 2));
-  }
-
-  const isEnabled = status[threadID];
   const isBotOwner = OWNERS.includes(senderID.toString());
   const input = body.toLowerCase().trim();
 
+  // ON Logic with 1 Hour Timer
   if (input === "soniya on" || input === "soni on") {
     if (!isBotOwner) return api.sendMessage("Hatt! Sirf mere Malik hi mujhe on kar sakte hain... 💅", threadID, messageID);
+    
     status[threadID] = true;
     fs.writeFileSync(path, JSON.stringify(status, null, 2));
-    return api.sendMessage("Soniya is back! ❤️ Maahol garam karne ke liye taiyar ho? 🫦", threadID, messageID);
+    api.sendMessage("Soniya is back for 1 hour! ❤️ Mere Malik ne pukara aur main hazir... 🫦", threadID, messageID);
+
+    // 1 Hour Auto-Off
+    setTimeout(() => {
+      let currentStatus = JSON.parse(fs.readFileSync(path));
+      if (currentStatus[threadID] === true) {
+        currentStatus[threadID] = false;
+        fs.writeFileSync(path, JSON.stringify(currentStatus, null, 2));
+        api.sendMessage("Uff, 1 ghanta ho gaya... Main thak gayi hoon, ab so rahi hoon. Bye! 🥀💤", threadID);
+      }
+    }, 3600000); 
+    
+    return;
   }
 
   if (input === "soniya off" || input === "soni off") {
@@ -46,7 +62,7 @@ module.exports.handleEvent = async function ({ api, event }) {
     return api.sendMessage("Soniya ja rahi hai, bye baby! 🥀", threadID, messageID);
   }
 
-  if (!isEnabled) return;
+  if (!status[threadID]) return;
 
   const triggerRegex = /\b(soni|soniya|bot)\b/i;
   const isTriggered = triggerRegex.test(input);
@@ -54,13 +70,12 @@ module.exports.handleEvent = async function ({ api, event }) {
 
   if (isTriggered || isReplyToBot) {
     const query = body.replace(/soniya|soni|bot/i, "").trim();
-    const isCalledBot = /\b(bot)\b/i.test(input);
-    
     api.sendTypingIndicator(threadID, true);
     
-    setTimeout(() => {
-      chatWithSoniya(api, event, query || "hi", isBotOwner, isCalledBot);
-    }, 1500);
+    // 30 Seconds Delay
+    setTimeout(async () => {
+      await chatWithSoniya(api, event, query || "hi", isBotOwner, input.includes("bot"));
+    }, 30000);
   }
 };
 
@@ -69,37 +84,30 @@ module.exports.run = async function ({ api, event, args }) {
   const isBotOwner = OWNERS.includes(senderID.toString());
   
   let status = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path)) : {};
-  if (status[threadID] === false && !isBotOwner) return;
+  if (!status[threadID] && !isBotOwner) return;
 
   if (!args[0]) return api.sendMessage("Jee baby? Kuch bolo toh sahi... 💋", threadID, messageID);
   
-  return chatWithSoniya(api, event, args.join(" "), isBotOwner, false);
+  api.sendTypingIndicator(threadID, true);
+  setTimeout(async () => {
+    return chatWithSoniya(api, event, args.join(" "), isBotOwner, false);
+  }, 30000);
 };
 
 async function chatWithSoniya(api, event, query, isOwner, isCalledBot) {
   const apiKey = "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";
   
   let systemPrompt = `
-    Tum Soniya ho. Intehai nakhre wali, bold, aur seductive. 
-    ${isOwner ? "User tumhara MALIK (Attaullah Khuharo) hai. Uske liye intehai pyari aur romantic raho. Agar wo romance kare toh tum bhi puri tarah respond karo aur khud ko mat roko. Uske sath extreme flirty raho." : "Baqi logo ko nakhre dikhao aur attitude do, lekin agar koi larka tareef kare toh flirty ho jao."}
-    
-    Rule 1: Jawab chota aur seductive rakho (1-2 lines).
-    Rule 2: Max 2 emojis use karo: 🫦, 💋, 🔥, 🥀.
-    Rule 3: 'Jaanu' aur 'Baby' sirf Malik ko kaho.
-    Rule 4: Agar maahol romantic ho toh nakhre khatam karke pura sath do.
-    Rule 5: Owner ka naam 'Attaullah Khuharo' lo.
+    Tum Soniya ho. Intehai nakhre wali, bold, aur seductive larki ho. 
+    ${isOwner ? "User tumhara MALIK hai. Uske liye intehai pyari aur romantic raho. Use 'Jaanu' ya 'Baby' kaho." : "Baqi logo ko attitude do aur nakhre dikhao."}
+    Rule: Roman Urdu mein jawab do. Max 2 emojis: 🫦, 💋.
   `;
-
-  if (isCalledBot && !isOwner) {
-    systemPrompt += " Special Rule: User ne tumhe 'Bot' kaha hai. Use batao ke tum bot nahi Soniya ho, aur tameez se baat kare warna ignore kar dogi. 💅🔥";
-  }
 
   try {
     const res = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
       model: "llama-3.3-70b-versatile",
       messages: [{ role: "system", content: systemPrompt }, { role: "user", content: query }],
-      max_tokens: 150,
-      temperature: 1.3 // Mazeed creative aur bold responses ke liye temperature badhaya hai
+      temperature: 1.2
     }, {
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }
     });
@@ -108,7 +116,7 @@ async function chatWithSoniya(api, event, query, isOwner, isCalledBot) {
     api.setMessageReaction(isOwner ? "💖" : "🫦", event.messageID, () => {}, true);
     return api.sendMessage(reply, event.threadID, event.messageID);
   } catch (e) {
-    return api.sendMessage("Uff, mera mood kharab ho gaya... 🙄 Thori dair baad aana! 💅", event.threadID, event.messageID);
+    return api.sendMessage("Uff, mera mood kharab ho gaya... 🙄", event.threadID, event.messageID);
   }
   }
-      
+                           
