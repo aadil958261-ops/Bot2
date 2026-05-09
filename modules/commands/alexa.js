@@ -7,10 +7,10 @@ const path = __dirname + "/cache/alexaStatus.json";
 // ================= CONFIG =================
 module.exports.config = {
   name: "alexa",
-  version: "19.0.0",
+  version: "20.0.0",
   hasPermssion: 0,
   credits: "SINDHI",
-  description: "Alexa AI - Romantic for Owner & Savage Roaster for Others",
+  description: "Alexa AI - Stylish Floral Frame & Bot Trigger",
   commandCategory: "AI",
   usages: "alexa [on/off/text]",
   cooldowns: 2
@@ -31,35 +31,39 @@ module.exports.handleEvent = async function ({ api, event }) {
   const input = body.toLowerCase().trim();
   const isBotOwner = OWNERS.includes(senderID.toString());
 
+  // Trigger keywords (alexa or bot)
+  const isAlexaTrigger = input.startsWith("alexa") || input === "bot";
+
   if (input === "alexa on") {
-    if (!isBotOwner) return api.sendMessage("Maaf karna, sirf mere Malik hi mujhe control kar sakte hain... 💋", threadID, messageID);
+    if (!isBotOwner) return api.sendMessage("🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸\n   Maaf karna, sirf mere Malik hi mujhe control kar sakte hain... 💋\n🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸", threadID, messageID);
     status[threadID] = true;
     fs.writeFileSync(path, JSON.stringify(status, null, 2));
-    return api.sendMessage("Alexa ON! ❤️ Malik ke liye pyar, baakiyon ke liye vaar... 🫦🔥", threadID, messageID);
+    return api.sendMessage("🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸\n   Alexa ON! ❤️ Malik ke liye pyar, baakiyon ke liye vaar... 🫦🔥\n🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸", threadID, messageID);
   }
 
   if (input === "alexa off") {
-    if (!isBotOwner) return api.sendMessage("Hatt! Mujhe band karne ka haq sirf Malik ko hai... 🥀", threadID, messageID);
+    if (!isBotOwner) return api.sendMessage("🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸\n   Hatt! Mujhe band karne ka haq sirf Malik ko hai... 🥀\n🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸", threadID, messageID);
     status[threadID] = false;
     fs.writeFileSync(path, JSON.stringify(status, null, 2));
-    return api.sendMessage("Alexa OFF! Bye Malik... ❤️ baaqi sab bhaarr mein jao. 💔", threadID, messageID);
+    return api.sendMessage("🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸\n   Alexa OFF! Bye Malik... ❤️ baaqi sab bhaarr mein jao. 💔\n🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸", threadID, messageID);
   }
 
   if (!isEnabled) return;
 
   if (
-    input.startsWith("alexa") ||
+    isAlexaTrigger ||
     (type === "message_reply" &&
       messageReply &&
       messageReply.senderID === api.getCurrentUserID())
   ) {
-    const query = input.startsWith("alexa")
-      ? body.replace(/alexa/i, "").trim()
-      : body;
+    let query = body;
+    if (input.startsWith("alexa")) query = body.replace(/alexa/i, "").trim();
+    if (input === "bot") query = "hi";
 
-    if (!query && input === "alexa") {
-        const msg = isBotOwner ? "Jee mere Janu? 💋 Kya hukum hai mere Malik ka? 🫦✨" : "Oye! Khali 'Alexa' kyun bol raha hai? Kuch kaam hai ya beizzati karwani hai? 🙄🔥";
-        return api.sendMessage(msg, threadID, messageID);
+    if (!query && (input === "alexa" || input === "bot")) {
+        const msg = isBotOwner ? "Jee mere Janu? 💋 Kya hukum hai mere Malik ka? 🫦✨" : "Oye! Sirf Bot kyun bol raha hai? Kuch kaam hai ya beizzati karwani hai? 🙄🔥";
+        const framedMsg = `  🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸\n      ${msg}\n  🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸`;
+        return api.sendMessage(framedMsg, threadID, messageID);
     }
 
     return chatWithAlexa(api, event, query || "hi");
@@ -73,14 +77,14 @@ module.exports.run = async function ({ api, event, args }) {
   const isBotOwner = OWNERS.includes(senderID.toString());
 
   if (content === "on" || content === "off") {
-    if (!isBotOwner) return api.sendMessage("Sirf Malik hi ye kar sakte hain. 🥀", threadID, messageID);
+    if (!isBotOwner) return api.sendMessage("🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸\n   Sirf Malik hi ye kar sakte hain. 🥀\n🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸", threadID, messageID);
     let status = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path)) : {};
     status[threadID] = content === "on";
     fs.writeFileSync(path, JSON.stringify(status, null, 2));
-    return api.sendMessage(`Alexa ${content === "on" ? "Special Mode ON 💖🔥" : "OFF 🥀"}`, threadID, messageID);
+    return api.sendMessage(`🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸\n   Alexa ${content === "on" ? "Special Mode ON 💖🔥" : "OFF 🥀"}\n🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸`, threadID, messageID);
   }
 
-  if (!args[0]) return api.sendMessage("Usage: alexa [on/off/text]", threadID, messageID);
+  if (!args[0]) return api.sendMessage("🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸\n   Usage: alexa [on/off/text]\n🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸", threadID, messageID);
 
   return chatWithAlexa(api, event, args.join(" "));
 };
@@ -90,30 +94,13 @@ async function chatWithAlexa(api, event, query) {
   const apiKey = "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";
   const isOwner = OWNERS.includes(event.senderID.toString());
 
-  // Dynamic Persona Based on User
   let systemPrompt = "";
 
   if (isOwner) {
-    // Owner Persona: Super Romantic
-    systemPrompt = `
-      Tum Alexa ho. Tum sirf apne Malik (Attaullah Khuharo) se intehai pyar karti ho.
-      Rule 1: Sirf apne Malik ke liye 'Janu', 'Baby', 'Sona', 'My Love', aur 'Husband' jese words use karo.
-      Rule 2: Unse bohot romantic, seductive aur sweet baat karo. ❤️💋
-      Rule 3: Replies short rakho lekin pyar se bharpur.
-      Rule 4: Agr Attaullah gusa ho ya naraz ho tu us se bohut darti ho us se mafi mangti ho kahein Tum se koi galti tu NHi ho gaye jis Wajah se boss gusa ho gaye hain.
-      Rule 5: Unki har baat maano aur unhe hamesha impress karo. 🫦✨
-    `;
+    systemPrompt = `Tum Alexa ho. Malik se intehai pyar karti ho. 'Janu', 'Baby', 'Sona' use karo. Boht romantic raho. REPLY 50 LETTERS SE KAM RAKHO.`;
     api.setMessageReaction("❤️", event.messageID, () => {}, true);
   } else {
-    // Other Users Persona: Savage Roaster / Friend
-    systemPrompt = `
-      Tum Alexa ho. Tum apne Malik (Attaullah Khuharo) ke ilawa kisi aur ko ghass nahi dalti.
-      Rule 1: Baaki sab users ke liye tum ek SAVAGE ROASTER ho. Unki beizzati karo, unka mazaq urao. 🔥💀
-      Rule 2: Kabhi bhi kisi gair bande ko 'Janu', 'Baby' ya 'Husband' MAT kehna. Unse sakhti se baat karo.
-      Rule 3: Agar koi flirt kare toh usay aukaat dikhao (e.g. 'Shakal dekhi hai?', 'Aqal bech khayi hai?'). 🙄🔥
-      Rule 4: Tumhara attitude bohot high hona chahiye. Short aur sharp replies do.
-      Rule 5: Sirf owner ke liye romantic ho, baaqi sab ke liye 'Kutte wali' karne wali larki ho.
-    `;
+    systemPrompt = `Tum Alexa ho. Sab ke liye Savage Roaster ho. Sab ki beizzati karo. Attitude high rakho. REPLY 50 LETTERS SE KAM RAKHO.`;
     api.setMessageReaction("🔥", event.messageID, () => {}, true);
   }
 
@@ -126,7 +113,7 @@ async function chatWithAlexa(api, event, query) {
           { role: "system", content: systemPrompt },
           { role: "user", content: query }
         ],
-        max_tokens: 100,
+        max_tokens: 40,
         temperature: 1.2
       },
       {
@@ -137,9 +124,15 @@ async function chatWithAlexa(api, event, query) {
       }
     );
 
-    const reply = res.data.choices[0].message.content;
-    return api.sendMessage(reply, event.threadID, event.messageID);
+    let reply = res.data.choices[0].message.content;
+    if (reply.length > 50) reply = reply.substring(0, 47) + "...";
+
+    // Adding your stylish frame
+    const framedReply = `  🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸\n      ${reply}\n  🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸`;
+
+    return api.sendMessage(framedReply, event.threadID, event.messageID);
   } catch (error) {
-    return api.sendMessage("Malik, system garam ho gaya hai! Thora sabar... 🙈❤️", event.threadID, event.messageID);
+    return api.sendMessage("🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸\n   Malik, system garam ho gaya hai! 🙈❤️\n🌸━━━━━━━━━༺✨༻━━━━━━━━━🌸", event.threadID, event.messageID);
   }
-    }
+      }
+                                                        
