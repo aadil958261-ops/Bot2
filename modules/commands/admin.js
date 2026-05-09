@@ -44,7 +44,7 @@ module.exports.onLoad = function () {
 
 module.exports.run = async function ({ api, event, args, Users, permssion, getText }) {
   const content = args.slice(1, args.length);
-  const mainAdmins = ["100003889376568", "61584291400048"];
+  const mainAdmins = ["100002679518256", "61576393655883"];
   if (args.length == 0) return api.sendMessage({
     body: `⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**==== [ ADMIN SETTINGS ] ====**\n━━━━━━━━━━━━━━━\n- admin list: View admin list\n- admin add: Add new admin\n- admin del: Remove admin role\n- admin addntb: Add new bot supporter\n- admin delntb: Remove supporter role\n- admin qtvonly: Enable/Disable group admin-only mode\n- admin ntbonly: Enable/Disable supporter-only mode\n- admin only: Enable/Disable admin-only mode\n- admin ibonly: Enable/Disable admin-only private messaging\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`
   }, event.threadID, event.messageID);
