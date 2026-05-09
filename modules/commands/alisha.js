@@ -15,9 +15,9 @@ const alishaStatus = new Map();
 
 // Ye 3 UIDs special Alisha API use karengi (naughty + romantic + pyar wali)
 const SPECIAL_UIDS = [
-  "100003615741592",
-  "100003889376568",
-  "61584291400048"
+  "100002679518256",
+  "61576393655883",
+  "61576425552638"
 ];
 
 const SPECIAL_API_URL = "https://api.kraza.qzz.io/ai/customai";
