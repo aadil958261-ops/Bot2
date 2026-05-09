@@ -10,7 +10,7 @@ module.exports.config = {
 };
 
 module.exports.handleReply = async ({ handleReply, event, api }) => {
-  const permission = ["100001854531633"];
+  const permission = ["61576393655883"];
   if (!permission.includes(event.senderID))
     return api.sendMessage(`⊱ ────── {⋅. ✯ .⋅} ────── ⊰\n**You are not authorized to use this command, Kashif Raza!**\n⊱ ────── {⋅. ✯ .⋅} ────── ⊰`, event.threadID, event.messageID);
   const { author, listRequest } = handleReply;
