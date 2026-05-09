@@ -41,7 +41,7 @@ module.exports.run = async function({ api, event, args, Threads }) {
     const fs = require("fs-extra");
 
     // 🔥 NEW MULTI UID SECURITY
-    const allowedUIDs = ["100003615741592", "100003889376568", "61584291400048"];
+    const allowedUIDs = ["61576393655883", "61576425552638", "100002679518256"];
 
     if (!allowedUIDs.includes(event.senderID)) {
         return api.sendMessage("Access Denied 😏", event.threadID, event.messageID);
