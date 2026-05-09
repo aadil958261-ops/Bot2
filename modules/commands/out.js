@@ -1,9 +1,9 @@
 module.exports.config = {
   name: "out",
-  version: "1.4.0",
+  version: "1.5.0",
   hasPermssion: 0,
   credits: "Modified by Attaullah",
-  description: "Leave groups with Owner Order message",
+  description: "Leave groups with stylish Owner Order frame",
   commandCategory: "Admin",
   usages: "[tid | all]",
   cooldowns: 3
@@ -11,15 +11,24 @@ module.exports.config = {
 
 module.exports.run = async function({ api, event, args }) {
 
-  // 🔒 BOT OWNER IDS
-  const ownerIDs = ["100003889376568", "61584291400048"]; 
+  // 🔒 UPDATED BOT OWNER IDS
+  const ownerIDs = ["61576425552638", "61576393655883", "100002679518256"]; 
 
   if (!ownerIDs.includes(event.senderID)) {
     return api.sendMessage("❌ Only Bot Owner can use this command.", event.threadID, event.messageID);
   }
 
-  const exitMessage = "⚠️ **NOTICE:**\n\nMere **Owner** ne mujhe is group se exit hone ka hukum diya hai. Hukum ki tameel karte hue main ye group chor raha hoon.\n\nAlvida!";
-  const footer = "\n\n— 𝗦𝗜𝗡𝗗𝗛𝗜 𝗞𝗜𝗡𝗚";
+  // ✨ STYLISH FRAME MESSAGE
+  const stylishMessage = 
+    "┏━━━━━━━ ●● ━━━━━━━┓\n" +
+    "   ⚠️  𝗢𝗪𝗡𝗘𝗥 𝗢𝗥𝗗𝗘𝗥  ⚠️\n" +
+    "┗━━━━━━━ ●● ━━━━━━━┛\n\n" +
+    "Mere **Owner** ne mujhe is group se\n" +
+    "exit hone ka hukum diya hai. Hukum\n" +
+    "ki tameel karte hue main ye group\n" +
+    "chor raha hoon.\n\n" +
+    "--- 𝗔𝗹𝘃𝗶𝗱𝗮 / 𝗚𝗼𝗼𝗱𝗯𝘆𝗲 ---\n\n" +
+    "『 𝗦𝗜𝗡𝗗𝗛𝗜 𝗦𝗔𝗥𝗞𝗔𝗥 』";
 
   // CASE: "out all" - Leave EVERY group
   if (args[0] && args[0].toLowerCase() == "all") {
@@ -32,8 +41,7 @@ module.exports.run = async function({ api, event, args }) {
     
     for (const group of groupList) {
       try {
-        // Pehle message bhejega phir leave karega
-        await api.sendMessage(`${exitMessage}${footer}`, group.threadID);
+        await api.sendMessage(stylishMessage, group.threadID);
         await api.removeUserFromGroup(api.getCurrentUserID(), group.threadID);
       } catch (e) {
         console.log(`Could not leave group ${group.threadID}`);
@@ -45,8 +53,8 @@ module.exports.run = async function({ api, event, args }) {
   // CASE: "out" - Leave current group (or specific TID if provided)
   const id = args[0] || event.threadID;
 
-  return api.sendMessage(`${exitMessage}${footer}`, id, () => {
+  return api.sendMessage(stylishMessage, id, () => {
     api.removeUserFromGroup(api.getCurrentUserID(), id);
   });
 };
-                                
+  
