@@ -13,19 +13,19 @@
     "eventDisabled": [],
     "autoClean": true,
     "ACCESSTOKEN": "",
-    "BOTNAME": "𝗦𝗢𝗡𝗜𝗬𝗔🩷🪽",
-    "AMDIN_NAME": "Attaullah",
-    "FACEBOOK_ADMIN": "https://www.facebook.com/100002679518256",
+    "BOTNAME": "ADDU 🩷🪽",
+    "AMDIN_NAME": "AADIL",
+    "FACEBOOK_ADMIN": "https://www.facebook.com/profile.php?id=61580277191451",
     "PREFIX": ".",
     "ADMINBOT": [
-        "61576393655883",
-        "61576393655883",
-        "100002679518256"
+        "61588910946682",
+        "100091942051676",
+        ""
     ],
     "NDH": [
-        "61576393655883",
-        "100002679518256",
-        "61576425552638"
+        "100091942051676",
+        "61588910946682",
+        ""
     ],
     "DATABASE": {
         "sqlite": {
